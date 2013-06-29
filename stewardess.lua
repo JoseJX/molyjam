@@ -1,0 +1,2 @@
+-- The stewardess passes back and forth in front of the passenger view
+-- Can catch the phone user, and prevent the user from talking

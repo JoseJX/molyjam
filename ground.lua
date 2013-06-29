@@ -1,0 +1,2 @@
+-- Draw the ground/terrain
+-- Polygon based, with random sprite decorations
