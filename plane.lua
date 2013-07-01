@@ -10,9 +10,8 @@ function Plane:new(x_pos, y_pos)
 		image = nil,	
 		x = x_pos,
 		y = y_pos,
-		dx = 1,
-		dy = 0,
 		angle = 0,
+		speed = 3,
 	}
 
 	-- Load the plane sprite
@@ -21,38 +20,27 @@ function Plane:new(x_pos, y_pos)
 	return setmetatable(obj, Plane)
 end
 
--- Forward motion is always 1 unit
+-- Forward motion is always 5 units
 function Plane:update(dt)
 	local angle = self.angle + 90
 	-- Update ax/ay
-	local ax = math.sin(math.rad(angle))
-	local ay = math.cos(math.rad(angle))
+	local dx = self.speed * math.sin(math.rad(angle))
+	local dy = self.speed * math.cos(math.rad(angle))
 
-	-- print ("Update Angle: " .. angle)
-	-- print (ax, ay)
-
-	-- Update dx/dy
-	self.dx = self.dx + ax
-	self.dy = self.dy + ay
-	-- print (self.dx, self.dy)
-
-	self.dx = math.min(math.max(-5, self.dx), 5)
-	self.dy = math.min(math.max(-5, self.dy), 5)
+	dx = math.min(math.max(-5, dx), 5)
+	dy = math.min(math.max(-5, dy), 5)
 
 	-- Make the plane easier to level
-	if(self.dx < 0.1 and self.dx > -0.1) then
+	if(dx < 0.1 and dx > -0.1) then
 		self.dx = 0
 	end
-	if(self.dy < 0.1 and self.dy > -0.1) then
+	if(dy < 0.1 and dy > -0.1) then
 		self.dy = 0
 	end
 		
-
 	-- Update the position
-	self.x = self.x + self.dx
-	self.y = self.y + self.dy
-
-	-- print (self.x, self.y)
+	self.x = self.x + dx
+	self.y = self.y + dy
 end
 
 -- We always draw the plane in the middle of the screen, except when we're near an edge
