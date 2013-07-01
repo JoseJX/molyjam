@@ -1,7 +1,7 @@
 RELEASE_NAME=test
 
-LUA_FILES=main.lua ground.lua
-DATA_FILES=
+LUA_FILES=main.lua ground.lua plane.lua conf.lua cabinview.lua caller.lua
+DATA_FILES=plane.png cloud1.png bear.png cabin.png
 
 FILELIST=${LUA_FILES} ${DATA_FILES}
 
