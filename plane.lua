@@ -39,6 +39,15 @@ function Plane:update(dt)
 	self.dx = math.min(math.max(-5, self.dx), 5)
 	self.dy = math.min(math.max(-5, self.dy), 5)
 
+	-- Make the plane easier to level
+	if(self.dx < 0.1 and self.dx > -0.1) then
+		self.dx = 0
+	end
+	if(self.dy < 0.1 and self.dy > -0.1) then
+		self.dy = 0
+	end
+		
+
 	-- Update the position
 	self.x = self.x + self.dx
 	self.y = self.y + self.dy
