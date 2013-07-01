@@ -44,7 +44,7 @@ function Button:draw()
 		lg.rectangle('fill', self.x + 5, self.y + 5, self.width - 10, self.height - 10)
 		-- Draw the text
 		lg.setColor(255,255,255,255)
-		lg.print(self.text, self.x + 10, self.y + 5)
+		lg.print(self.text, self.x + 10, self.y + 10)
 	else
 		-- Draw the inside
 		lg.setColor(255,255,255,255)
@@ -52,7 +52,7 @@ function Button:draw()
 
 		-- Draw the text
 		lg.setColor(0,0,0,255)
-		lg.print(self.text, self.x + 10, self.y + 5)
+		lg.print(self.text, self.x + 10, self.y + 10)
 	end
 end
 

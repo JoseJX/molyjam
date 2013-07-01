@@ -83,27 +83,27 @@ end
 -- Main update loop
 function love.update(dt)
 	if lk.isDown("left") then
-		p["dx"] = p["dx"] - 1
-		if p["dx"] < 1  then
-			p["dx"] = 1
+		p["speed"] = p["speed"] - 1
+		if p["speed"] < 1  then
+			p["speed"] = 1
 		end
 	end
 	if lk.isDown("right") then
-		p["dx"] = p["dx"] + 1
-		if p["dx"] > 5 then
-			p["dx"] = 5
+		p["speed"] = p["speed"] + 1
+		if p["speed"] > 5 then
+			p["speed"] = 5
 		end
 	end
 	if lk.isDown("up") then
-		p["y"] = p["y"] + 5
-		if p["y"] >= (height - window_height) then
-			p["y"] = height - window_height
+		p["angle"] = p["angle"] + 1
+		if(p["angle"] > 360) then
+			p["angle"] = p["angle"] - 360
 		end
 	end
 	if lk.isDown("down") then
-		p["y"] = p["y"] - 5
-		if p["y"] < 0  then
-			p["y"] = 0
+		p["angle"] = p["angle"] - 1
+		if(p["angle"] < 0) then
+			p["angle"] = p["angle"] + 360
 		end
 	end
 	p:update(dt)
