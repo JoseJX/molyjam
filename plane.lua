@@ -10,7 +10,6 @@ function Plane:new(x_pos, y_pos)
 		image = nil,	
 		x = x_pos,
 		y = y_pos,
-		speed = 5,
 		dx = 1,
 		dy = 0,
 		angle = 0,
@@ -22,32 +21,29 @@ function Plane:new(x_pos, y_pos)
 	return setmetatable(obj, Plane)
 end
 
+-- Forward motion is always 1 unit
 function Plane:update(dt)
-	local dx = self.dx
-	local dy = self.dy
-	-- Update dx/dy
-	dx = dx + math.sin(self.angle * (math.pi / 180))
-	dy = dy + math.cos(self.angle * (math.pi / 180))
+	local angle = self.angle + 90
+	-- Update ax/ay
+	local ax = math.sin(math.rad(angle))
+	local ay = math.cos(math.rad(angle))
 
-	if(dx > 5) then
-		dx = 5
-	end
-	if(dy > 5) then
-		dy = 5
-	end
-	if(dx < -5) then
-		dx = -5;
-	end
-	if(dy < -5) then
-		dy = -5;
-	end
-	self.dx = dx
-	self.dy = dy
-	
+	-- print ("Update Angle: " .. angle)
+	-- print (ax, ay)
+
+	-- Update dx/dy
+	self.dx = self.dx + ax
+	self.dy = self.dy + ay
+	-- print (self.dx, self.dy)
+
+	self.dx = math.min(math.max(-5, self.dx), 5)
+	self.dy = math.min(math.max(-5, self.dy), 5)
 
 	-- Update the position
-	self.x = self.x + dx
-	self.y = self.y + dy
+	self.x = self.x + self.dx
+	self.y = self.y + self.dy
+
+	-- print (self.x, self.y)
 end
 
 -- We always draw the plane in the middle of the screen, except when we're near an edge
@@ -59,9 +55,9 @@ function Plane:draw(max_altitude, max_distance, screen_height, screen_width)
 	lg.push()
 
 	-- Translate the screen
-	lg.translate(screen_width/4, screen_height/2)
-	lg.rotate(self.angle)
-	lg.translate(-screen_width/4, -screen_height/2)
+	lg.translate(screen_width/4 + self.image:getWidth()/2, screen_height/2 + self.image:getHeight()/2)
+	lg.rotate(math.rad(self.angle))
+	lg.translate(-(screen_width/4 + self.image:getWidth()/2), -(screen_height/2 + self.image:getHeight()/2))
 	lg.draw(self.image, screen_width/4, screen_height/2)	
 
 	-- Restore the coordinate system
