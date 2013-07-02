@@ -1,3 +1,5 @@
+local Stewardess = require 'stewardess'
+
 -- Draw the cabin view, including the caller, the seats, the stewardess, the phone
 local CabinView = {}
 CabinView.__index = CabinView
@@ -8,18 +10,25 @@ function CabinView:new()
 	local obj = { 
 		-- Image data
 		image = nil,	
+		-- Stewardess
+		s = nil
 	}
 
 	-- Load the cabin sprite
 	obj.image = lg.newImage("cabin.png")
-
 	return setmetatable(obj, CabinView)
+end
+
+-- Update the cabin view
+function CabinView:update(dt)
+	self.s:update(dt)
 end
 
 -- We always draw the cabin view at the bottom of the right panel, possibly add rotation here
 function CabinView:draw(x, y)
 	lg.setColor(255,255,255,255)
 	lg.draw(self.image, x, y)
+	self.s:draw()
 end
 
 return CabinView

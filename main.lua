@@ -46,9 +46,8 @@ function love.load()
 
 	-- Load the cabin view
 	cv = CabinView:new()
-
 	-- Load the stewardess
-	s = Stewardess:new(UI_right_panel_x, window_width)
+	cv.s = Stewardess:new(UI_right_panel_x, window_width)
 
 	-- Load the callers
 	c = Caller:new()
@@ -119,7 +118,7 @@ function love.update(dt)
 	p:update(dt)
 
 	-- Update the stewardess
-	s:update(dt)
+	cv.s:update(dt)
 end
 
 -- Drawing function, all drawing must be done from here!
@@ -149,7 +148,7 @@ function love.draw()
 	cv:draw(window_width/2 + UI_divider_width, window_height - cv["image"]:getHeight())
 	
 	-- Draw the stewardess
-	s:draw()
+	cv.s:draw()
 
 	-- Draw the callers
 	c:draw(window_width - 160, UI_bar_height)

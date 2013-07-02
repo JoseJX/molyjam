@@ -11,7 +11,6 @@ local stewardess_state = {
 }
 
 function Stewardess:new(wpl, wpr)
-	print (wpl, wpr)
 	local obj = { 
 		-- Image data
 		images = {},
