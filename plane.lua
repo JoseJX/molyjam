@@ -71,42 +71,37 @@ end
 -- Draw the plane graphic onto the screen
 -- We always draw the plane in the middle of the screen, except when we're near an edge
 function Plane:draw()
-	-- Get the current rendering area
-	local view_x, view_y, view_width, view_height = lg.getScissor()
+	-- Get the current window area
+	local window_x, window_y, window_width, window_height = lg.getScissor()
 
-	local view_center_x = (view_width/2 - self.com_x)
-	local view_center_y = (view_height/2 - self.com_y)
+	-- Find the plane position in the window area, X is always the same
+	local plane_x = window_x + window_width/2
+	local plane_y = 0
 
-	-- Find the plane position
-	local py = 0
-	-- Plane is in the upper region and has to leave center (higher)
-	if p["y"] > (self.max_altitude - view_center_y) then
---		print ("Mode: Upper " .. p["y"] .. " " .. view_center_y )
-		py = self.max_altitude - p["y"]
-	-- Plane is in the lower region and has to leave center (lower)
-	elseif p["y"] < view_center_y - self.min_altitude then
---		print ("Mode: Lower " .. p["y"] .. " " .. view_center_y )
-		py = view_height - (p["y"] + 50)--+ self.image:getHeight())
-	-- Centered
+	-- If the plane's altitude is below 1/2 the screen height, let it move in the y direction
+	if self.y < window_height/2 then
+		plane_y = window_y + (window_height - self.y)
+	-- If the plane's altitude is within 1/2 the screen height of the top, let it move in the y direction
+	elseif self.y > self.max_altitude - window_height/2 then
+		plane_y = window_y + (self.max_altitude - self.y)
+	-- All other times, we center it
 	else
---		print ("Mode: Center " .. p["y"] .. " " .. view_center_y )
-		py = view_center_y
+		plane_y = window_y + window_height/2
 	end
-	-- print ("py:" .. py)
 	
 	-- Save the current coordinate system
 	lg.push()
 
-	-- Translate the screen
-	lg.translate(view_center_x, py)
+	-- Translate the drawing coordinates
+	lg.translate(plane_x, plane_y)
 	lg.rotate(math.rad(self.angle))
-	lg.translate(-view_center_x, -py)
+	lg.translate(-plane_x, -plane_y)
 	lg.setColor(255,255,255,255)
-	lg.draw(self.image, view_center_x, py)
-	
+	lg.draw(self.image, plane_x - self.com_x, plane_y - self.com_y)
+
 	-- DEBUG - draw a dot at the plane's rotation point position
 	lg.setColor(255,0,0,255)
-	lg.circle('fill', view_center_x, py, 3)
+	lg.circle('fill', plane_x, plane_y, 3)
 
 	-- Restore the coordinate system
 	lg.pop()

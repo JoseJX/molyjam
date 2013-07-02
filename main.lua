@@ -9,7 +9,7 @@ local lk = love.keyboard
 
 -- Level settings
 length = 100000
-height = 1200
+height = 2000
 
 -- Game settings
 window_width = lg.getWidth()
@@ -27,6 +27,8 @@ local UI_button_spacer = 40
 local UI_player_window_width = (window_width / 2) - (UI_divider_width/2)
 local UI_player_window_height = window_height - UI_bar_height
 local UI_right_panel_x = UI_player_window_width + UI_divider_width
+
+draw_ct = 0
 
 -- Buttons in the UI
 buttons = {}
@@ -183,5 +185,12 @@ function love.draw()
 	lg.print(math.floor(p["x"]), window_width*.2, UI_score_oft_V)
 	lg.print(math.floor(p["y"]), window_width*.3, UI_score_oft_V)
 	lg.print(p["entropy"], window_width*.4, UI_score_oft_V)
+
+	if draw_ct > 5 then
+		lg.setColor(0,0,255,255)
+		lg.circle('fill', UI_player_window_width/2, UI_player_window_height / 2 + UI_bar_height, 3)
+		draw_ct = 0
+	end
+	draw_ct = draw_ct + 1
 end
 

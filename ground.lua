@@ -74,7 +74,6 @@ function Ground:draw(plane_x, plane_y)
 	end
 
 	-- Draw the ground if needed
-	print (view_min_alt, self.ground_height - view_min_alt)
 	if(view_min_alt < self.ground_height) then
 		local ground_y = self.ground_height - view_min_alt
 		lg.rectangle('fill', 0, window_height - ground_y, window_width, window_height)
