@@ -52,59 +52,66 @@ function Ground:generate(height, length, max_hill_height, hill_density, cloud_de
 	table.sort(self.ground, height_compare)
 end
 
--- Draw the terrain
-function Ground:draw(view_x, view_y)
-	-- Get the current view
-	window_x, window_y, view_width, view_height = lg.getScissor()	
+-- Draw the terrain, relative to the plane position
+function Ground:draw(plane_x, plane_y)
+	-- Get the current draw box
+	local window_x, window_y, window_width, window_height = lg.getScissor()	
 
-	-- Draw the background
+	-- Draw the background sky
 	lg.setBackgroundColor(143,220,245,255)
 	lg.clear()
 
 	-- Set the ground color
 	lg.setColor(8, 168, 12, 255)
 
-	-- Are we low enough to draw the ground?
-	if(view_y < self.ground_height) then
-		local gh = view_height - (self.ground_height - view_y)
-		lg.rectangle('fill', 0, view_height, view_width, gh)
---		love.graphics.polygon('fill', 0, view_height, 0, gh, view_width, gh, view_width, view_height)
-	end
-	
-	local draw_to_y = view_height;
-	if(view_y < self.ground_height / 2) then
-		draw_to_y = view_height - ((self.ground_height/2) - view_y)
+	-- If the render window isn't locked (far enough from ground)
+	local view_max_alt = plane_y + (window_height / 2)
+	local view_min_alt = plane_y - (window_height / 2)
+	-- If the render window is loccked (close to ground)
+	if (plane_y < window_height/2) then
+		view_min_alt = 0
+		view_max_alt = window_height
 	end
 
-	-- Loop over all of the hills
+	-- Draw the ground if needed
+	print (view_min_alt, self.ground_height - view_min_alt)
+	if(view_min_alt < self.ground_height) then
+		local ground_y = self.ground_height - view_min_alt
+		lg.rectangle('fill', 0, window_height - ground_y, window_width, window_height)
+	end
+	
+	-- Draw the hills
 	for hill_id, hill in ipairs(self.ground) do
-		-- Are we drawing this hill?
-		if(hill["x"] >= view_x - self.max_hill_width and hill["x"] <= (view_x + view_width + self.max_hill_width) and hill["height"] > view_y - hill["width"]) then
+		-- Check if this hill is in view
+		if ((hill["x"] >= plane_x - hill["width"]) and (hill["x"] <= plane_x + window_width + hill["width"]) and ((hill["height"] + 2*hill["width"])> view_min_alt)) then
 			-- Yup, draw the top arc
 			lg.setColor(8, 168, 12, 255)
-			local draw_y = view_height - (hill["height"] - view_y)
-			local draw_x = hill["x"] - view_x
-			lg.arc('fill', draw_x, draw_y, hill["width"], math.pi, 2*math.pi, 10)
+			local hill_x = hill["x"] - plane_x
+			local hill_y = window_height - (hill["height"] - view_min_alt)
+			local draw_hill_y_to = hill_y + (hill["height"] - self.ground_height/2)
+			lg.arc('fill', hill_x, hill_y, hill["width"], math.pi, 2*math.pi, 10)
 			lg.setColor(0, 100, 0, 255)
-			lg.arc('line', draw_x, draw_y, hill["width"], math.pi, 2*math.pi, 10)
+			lg.arc('line', hill_x, hill_y, hill["width"], math.pi, 2*math.pi, 10)
 			
 			-- Then the rectangle
 			lg.setColor(8, 168, 12, 255)
-			lg.rectangle('fill', draw_x - hill["width"], draw_y - 1, 2 * hill["width"], draw_to_y)
+			lg.rectangle('fill', hill_x - hill["width"], hill_y - 1, 2 * hill["width"], draw_hill_y_to)
 			lg.setColor(0, 100, 0, 255)
-			lg.line(draw_x - hill["width"], draw_y - 1, draw_x - hill["width"], draw_to_y)
-			lg.line(draw_x + hill["width"], draw_y - 1, draw_x + hill["width"], draw_to_y)
+			lg.line(hill_x - hill["width"], hill_y - 1, hill_x - hill["width"], draw_hill_y_to)
+			lg.line(hill_x + hill["width"], hill_y - 1, hill_x + hill["width"], draw_hill_y_to)
 		end
-	end
 
-	-- Loop over all of the clouds
+	end
+	
+	-- Draw the clouds
 	for cloud_id, cloud in ipairs(self.clouds) do
 		-- Are we drawing this cloud?
-		if(cloud["x"] >= view_x - self.cloud_width and cloud["x"] <= (view_x + view_width + self.cloud_width) and cloud["height"] > view_y - self.cloud_width) then
+		if(cloud["x"] >= plane_x - self.cloud_width and cloud["x"] <= (plane_x + window_width + self.cloud_width) and cloud["height"] > view_min_alt) then
 			-- Draw the cloud
 			lg.setColor(255,255,255,255)
-			lg.draw(self.cloud_img, cloud["x"] - view_x, view_height - (cloud["height"] - view_y))
+			lg.draw(self.cloud_img, cloud["x"] - plane_x, window_height - (cloud["height"] - view_min_alt))
 		end
+
 	end
 end
 

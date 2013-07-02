@@ -4,17 +4,25 @@ Plane.__index = Plane
 
 local lg = love.graphics
 
+-- Create a new plane object
 function Plane:new(x_pos, y_pos, min_altitude, max_altitude)
 	local obj = { 
 		-- Image data
 		image = nil,	
+		-- X and Y position for the plane, relative to the center of mass
 		x = x_pos,
 		y = y_pos,
+		-- Angle the plane is currently traveling at (and rotated)
 		angle = 0,
+		-- Current forward speed @ angle
 		speed = 3,
 		entropy = 0, --   0 <= entropy <= 1
+		-- Altitude boundries
 		min_altitude = min_altitude,
 		max_altitude = max_altitude,
+		-- Center of Mass for the airplane
+		com_x = 80,
+		com_y = 34,
 	}
 
 	-- Load the plane sprite
@@ -24,7 +32,7 @@ function Plane:new(x_pos, y_pos, min_altitude, max_altitude)
 	return setmetatable(obj, Plane)
 end
 
--- Forward motion is always 5 units
+-- Update the plane's position relative to its angle and speed
 function Plane:update(dt)
 	-- Entropy calculations
 	self.angle = self.angle + math.random(-1,1) * self.speed * self.entropy / 5
@@ -60,27 +68,32 @@ function Plane:update(dt)
 	end
 end
 
+-- Draw the plane graphic onto the screen
 -- We always draw the plane in the middle of the screen, except when we're near an edge
 function Plane:draw()
 	-- Get the current rendering area
 	local view_x, view_y, view_width, view_height = lg.getScissor()
 
-	local view_center_x = (view_width - self.image:getWidth()) / 2
-	local view_center_y = (view_height - self.image:getHeight()) / 2
+	local view_center_x = (view_width/2 - self.com_x)
+	local view_center_y = (view_height/2 - self.com_y)
 
 	-- Find the plane position
 	local py = 0
 	-- Plane is in the upper region and has to leave center (higher)
 	if p["y"] > (self.max_altitude - view_center_y) then
+--		print ("Mode: Upper " .. p["y"] .. " " .. view_center_y )
 		py = self.max_altitude - p["y"]
 	-- Plane is in the lower region and has to leave center (lower)
-	elseif p["y"] < view_center_y then
-		py = view_height - (p["y"] + self.image:getHeight())
+	elseif p["y"] < view_center_y - self.min_altitude then
+--		print ("Mode: Lower " .. p["y"] .. " " .. view_center_y )
+		py = view_height - (p["y"] + 50)--+ self.image:getHeight())
 	-- Centered
 	else
+--		print ("Mode: Center " .. p["y"] .. " " .. view_center_y )
 		py = view_center_y
 	end
-		
+	-- print ("py:" .. py)
+	
 	-- Save the current coordinate system
 	lg.push()
 
@@ -90,6 +103,10 @@ function Plane:draw()
 	lg.translate(-view_center_x, -py)
 	lg.setColor(255,255,255,255)
 	lg.draw(self.image, view_center_x, py)
+	
+	-- DEBUG - draw a dot at the plane's rotation point position
+	lg.setColor(255,0,0,255)
+	lg.circle('fill', view_center_x, py, 3)
 
 	-- Restore the coordinate system
 	lg.pop()

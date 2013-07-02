@@ -8,7 +8,7 @@ local lg = love.graphics
 local lk = love.keyboard
 
 -- Level settings
-length = 10000
+length = 100000
 height = 1200
 
 -- Game settings
