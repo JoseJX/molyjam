@@ -25,15 +25,7 @@ end
 function Plane:update(dt)
 
 	-- Entropy calculations
-	--entropy = math.min(math.max(0, (self.x-10000)/10000), 1)
-	--dx = dx + self.speed*(math.random(-0.5,0.5)*entropy)
-	--dy = dy + self.speed*(math.random(-0.5,0.5)*entropy)
-	self.angle = self.angle + (math.random(-1,1) * self.speed * self.entropy)
-	if(self.angle > 360) then
-		self.angle = self.angle - 360
-	elseif(self.angle < 0) then
-		self.angle = self.angle + 360
-	end
+	self.angle = self.angle + math.random(-1,1) * self.speed * self.entropy / 5
 	
 	--local angle = self.angle + 90
 	-- Update ax/ay
