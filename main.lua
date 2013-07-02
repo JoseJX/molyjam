@@ -24,10 +24,9 @@ local UI_button_height = 30
 local UI_button_width = 440
 local UI_button_start_height = 80
 local UI_button_spacer = 40
-local UI_left_panel_x = 0
-local UI_right_panel_x = window_height/2 + UI_divider_width
 local UI_player_window_width = (window_width / 2) - (UI_divider_width/2)
 local UI_player_window_height = window_height - UI_bar_height
+local UI_right_panel_x = UI_player_window_width + UI_divider_width
 
 -- Buttons in the UI
 buttons = {}
@@ -152,7 +151,7 @@ function love.draw()
 	lg.rectangle('fill', window_width/2, 0, window_width/2, window_height)
 
 	-- Cabin view
-	cv:draw(window_width/2 + UI_divider_width, window_height - cv["image"]:getHeight())
+	cv:draw()
 	-- Caller
 	c:draw(window_width - 160, UI_bar_height)
 	-- Stewardess
@@ -168,7 +167,7 @@ function love.draw()
 	-- Draw the divider line between the two screens
 	lg.setScissor(0,0,lg.getWidth(),lg.getHeight())
 	lg.setColor(255,255,0,255)
-	lg.rectangle('fill', window_width/2, 0, UI_divider_width, window_height)
+	lg.rectangle('fill', window_width/2 - UI_divider_width/2, 0, UI_divider_width, window_height)
 	
 	-- Draw the UI
 	lg.setColor(0,0,0,255)

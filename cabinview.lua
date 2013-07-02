@@ -25,9 +25,10 @@ function CabinView:update(dt)
 end
 
 -- We always draw the cabin view at the bottom of the right panel, possibly add rotation here
-function CabinView:draw(x, y)
+function CabinView:draw()
+	win_x, win_y, win_width, win_height = lg.getScissor()
 	lg.setColor(255,255,255,255)
-	lg.draw(self.image, x, y)
+	lg.draw(self.image, win_x, win_height - self.image:getHeight())
 	self.s:draw()
 end
 
