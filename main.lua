@@ -3,6 +3,7 @@ local Plane = require 'plane'
 local CabinView = require 'cabinview'
 local Caller = require 'caller'
 local Button = require 'button'
+local Stewardess = require 'stewardess'
 local lg = love.graphics
 local lk = love.keyboard
 
@@ -11,8 +12,8 @@ length = 10000
 height = 1200
 
 -- Game settings
-window_width = 1280
-window_height = 720
+window_width = lg.getWidth()
+window_height = lg.getHeight()
 
 -- Graphics positioning constants
 local UI_bar_height = 20
@@ -23,6 +24,8 @@ local UI_button_height = 30
 local UI_button_width = 440
 local UI_button_start_height = 80
 local UI_button_spacer = 40
+local UI_left_panel_x = 0
+local UI_right_panel_x = window_height/2 + UI_divider_width
 
 -- Buttons in the UI
 buttons = {}
@@ -43,6 +46,9 @@ function love.load()
 
 	-- Load the cabin view
 	cv = CabinView:new()
+
+	-- Load the stewardess
+	s = Stewardess:new(UI_right_panel_x, window_width)
 
 	-- Load the callers
 	c = Caller:new()
@@ -108,7 +114,12 @@ function love.update(dt)
 			p["angle"] = p["angle"] + 360
 		end
 	end
+
+	-- Update the plane status
 	p:update(dt)
+
+	-- Update the stewardess
+	s:update(dt)
 end
 
 -- Drawing function, all drawing must be done from here!
@@ -136,10 +147,13 @@ function love.draw()
 
 	-- Draw the cabin view
 	cv:draw(window_width/2 + UI_divider_width, window_height - cv["image"]:getHeight())
+	
+	-- Draw the stewardess
+	s:draw()
 
 	-- Draw the callers
 	c:draw(window_width - 160, UI_bar_height)
-
+	
 	-- Draw the text
 	lg.setColor(255,255,255,255)
 	lg.print(c:getText(), window_width/2 + UI_divider_width * 2, UI_bar_height + 10)
