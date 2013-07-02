@@ -11,8 +11,8 @@ length = 10000
 height = 1200
 
 -- Game settings
-window_width = 1280
-window_height = 720
+window_width = lg.getWidth()
+window_height = lg.getHeight()
 
 -- Graphics positioning constants
 local UI_bar_height = 20
@@ -23,6 +23,8 @@ local UI_button_height = 30
 local UI_button_width = 440
 local UI_button_start_height = 80
 local UI_button_spacer = 40
+local UI_player_window_width = (window_width / 2) - (UI_divider_width/2)
+local UI_player_window_height = window_height - UI_bar_height
 
 -- Buttons in the UI
 buttons = {}
@@ -39,7 +41,7 @@ function love.load()
 	g:generate(height, length, max_ground_height, 0.03, 0.005)
 
 	-- Load the plane sprite
-	p = Plane:new(0, max_ground_height + 100)
+	p = Plane:new(0, max_ground_height + 100, 100, height)
 
 	-- Load the cabin view
 	cv = CabinView:new()
@@ -129,21 +131,27 @@ end
 -- Drawing function, all drawing must be done from here!
 function love.draw()
 	-- Draw the Player 1 screen
-	if(p["y"]>height) then
-		g:draw(p["x"], height, window_width/2, window_height)
-	elseif(p["y"]<0) then
-		g:draw(p["x"], 0, window_width/2, window_height)
-	else
-		g:draw(p["x"], p["y"], window_width/2, window_height)
-	end
-	--g:draw(p["x"], p["y"], window_width/2, window_height)
-	p:draw(height, level, window_width/2, window_height)
+	lg.setScissor(0, UI_bar_height, UI_player_window_width, UI_player_window_height)
+	g:draw(p["x"], p["y"])
+	p:draw(height, level)
 	
 	-- Draw the Player 2 screen
+	lg.setScissor(UI_player_window_width + UI_divider_width, UI_bar_height, UI_player_window_width, UI_player_window_height)
 	lg.setColor(128,128,128,255)
 	lg.rectangle('fill', window_width/2, 0, window_width/2, window_height)
+
+	cv:draw(window_width/2 + UI_divider_width, window_height - cv["image"]:getHeight())
+	c:draw(window_width - 160, UI_bar_height)
+	
+	lg.setColor(255,255,255,255)
+	lg.print(c:getText(), window_width/2 + UI_divider_width * 2, UI_bar_height + 10)
+
+	for button_id, button in ipairs(buttons) do
+		button:draw()
+	end
 	
 	-- Draw the divider line between the two screens
+	lg.setScissor(0,0,lg.getWidth(),lg.getHeight())
 	lg.setColor(255,255,0,255)
 	lg.rectangle('fill', window_width/2, 0, UI_divider_width, window_height)
 	
@@ -155,26 +163,11 @@ function love.draw()
 	lg.setColor(255,255,255,255)
 	lg.print("Player 1 Score: ", UI_score_oft_H, UI_score_oft_V)
 	lg.print("Player 2 Score: ", window_width/2 + UI_score_oft_H + UI_divider_width, UI_score_oft_V)	
-
 	--DEBUG stuff
 	lg.print(p["angle"], window_width*.1, UI_score_oft_V)
 	lg.print(math.floor(p["x"]), window_width*.2, UI_score_oft_V)
 	lg.print(math.floor(p["y"]), window_width*.3, UI_score_oft_V)
 	lg.print(p["entropy"], window_width*.4, UI_score_oft_V)
 	
-	-- Draw the cabin view
-	cv:draw(window_width/2 + UI_divider_width, window_height - cv["image"]:getHeight())
-
-	-- Draw the callers
-	c:draw(window_width - 160, UI_bar_height)
-
-	-- Draw the text
-	lg.setColor(255,255,255,255)
-	lg.print(c:getText(), window_width/2 + UI_divider_width * 2, UI_bar_height + 10)
-
-	-- Draw the buttons
-	for button_id, button in ipairs(buttons) do
-		button:draw()
-	end
 end
 

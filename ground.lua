@@ -53,7 +53,10 @@ function Ground:generate(height, length, max_hill_height, hill_density, cloud_de
 end
 
 -- Draw the terrain
-function Ground:draw(view_x, view_y, view_width, view_height)
+function Ground:draw(view_x, view_y)
+	-- Get the current view
+	window_x, window_y, view_width, view_height = lg.getScissor()	
+
 	-- Draw the background
 	lg.setBackgroundColor(143,220,245,255)
 	lg.clear()
@@ -64,7 +67,9 @@ function Ground:draw(view_x, view_y, view_width, view_height)
 	-- Are we low enough to draw the ground?
 	if(view_y < self.ground_height) then
 		local gh = view_height - (self.ground_height - view_y)
-		love.graphics.polygon('fill', 0, view_height, 0, gh, view_width, gh, view_width, view_height)
+		print (gh)
+		lg.rectangle('fill', 0, view_height, view_width, gh)
+--		love.graphics.polygon('fill', 0, view_height, 0, gh, view_width, gh, view_width, view_height)
 	end
 	
 	local draw_to_y = view_height;
@@ -80,6 +85,7 @@ function Ground:draw(view_x, view_y, view_width, view_height)
 			lg.setColor(8, 168, 12, 255)
 			local draw_y = view_height - (hill["height"] - view_y)
 			local draw_x = hill["x"] - view_x
+			print (draw_y, draw_x)
 			lg.arc('fill', draw_x, draw_y, hill["width"], math.pi, 2*math.pi, 10)
 			lg.setColor(0, 100, 0, 255)
 			lg.arc('line', draw_x, draw_y, hill["width"], math.pi, 2*math.pi, 10)
