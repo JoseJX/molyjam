@@ -12,7 +12,7 @@ local phone_states = {
 	"talking"
 }
 
-function CabinView:new()
+function CabinView:new(wpl, wpr, y)
 	local obj = { 
 		-- Image data
 		cabin = nil,	
@@ -37,8 +37,11 @@ function CabinView:new()
 	obj.phone = lg.newImage("graphics/phone.png")
 
 	-- Create the buttons
-	obj.button_hide = Button:new("Hide Phone", 0, 50, 150, 30)
-	obj.button_talk = Button:new("Use Phone", 0, 50, 150, 30)
+	obj.button_hide = Button:new("Hide Phone", wpl + 50, (y - obj.cabin:getHeight()) + 50, 150, 30)
+	obj.button_talk = Button:new("Use Phone", wpl + 450, (y - obj.cabin:getHeight()) + 50, 150, 30)
+
+	-- Create the stewardess
+	obj.s = Stewardess:new(wpl, wpr)
 
 	return setmetatable(obj, CabinView)
 end

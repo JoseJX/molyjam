@@ -43,13 +43,10 @@ function love.load()
 	p = Plane:new(0, max_ground_height + 100, 100, height)
 
 	-- Load the cabin view
-	cv = CabinView:new()
-	-- Load the stewardess
-	cv.s = Stewardess:new(UI_right_panel_x, window_width)
+	cv = CabinView:new(UI_right_panel_x, window_width, window_height)
 
 	-- Load the callers
 	c = Caller:new()
-
 end
 
 -- Keypress callbacks that aren't handled in the main update loop
