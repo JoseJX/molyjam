@@ -61,16 +61,10 @@ end
 
 -- Mouse press callbacks
 function love.mousepressed(x, y, button)
-	for button_id, button in ipairs(buttons) do
-		if button:check(x, y, true) then
-			c:update()
-		end
-	end
+	cv:mousepressed(x, y, true)
 end
 function love.mousereleased(x, y, button)
-	for button_id, button in ipairs(buttons) do
-		button:check(x, y, false)
-	end
+	cv:mousepressed(x, y, false)
 end
 
 -- Main update loop
@@ -141,13 +135,13 @@ function love.draw()
 	-- Draw the Player 2 screen
 	---------------------------
 	-- Cabin view
-	lg.setScissor(UI_player_window_width + UI_divider_width, UI_bar_height, UI_player_window_width, UI_player_window_height)
-	lg.setColor(128,128,128,255)
-	lg.rectangle('fill', window_width/2, 0, window_width/2, window_height)
+	lg.setScissor(UI_player_window_width + UI_divider_width, window_height - cv.cabin:getHeight(),UI_player_window_width, cv.cabin:getHeight())
 	cv:draw()
 
 	-- Caller Window
 	lg.setScissor(UI_player_window_width + UI_divider_width, UI_bar_height, UI_player_window_width, UI_player_window_height - cv.cabin:getHeight())
+	lg.setColor(128,128,128,255)
+	lg.rectangle('fill', window_width/2, 0, window_width/2, window_height)
 	c:draw()
 	
 	--------------

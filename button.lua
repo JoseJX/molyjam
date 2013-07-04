@@ -10,7 +10,8 @@ function Button:new(text, x_pos, y_pos, width, height)
 		width = width or 100, 
 		height = height or 20,
 		x = x_pos or 0,
-		y = y_pos or 00,
+		y = y_pos or 0,
+		visible = true,
 	}
 
 	-- Load all of the caller images
@@ -31,7 +32,14 @@ function Button:check(x, y, state)
 	return false
 end
 
+-- Set the x and y coordinates for this button
+function Button:setXY(x, y)
+	self.x = x
+	self.y = y
+end
+
 -- Draw the button
+-- NOTE that the x and y are relative to the main coordinate system
 -- FIXME make the text printing less brittle...
 function Button:draw()
 	-- Draw the outer rim
