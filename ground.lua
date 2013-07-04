@@ -16,7 +16,7 @@ function Ground:new(ground_height)
 	}
 
 	-- Load the cloud image
-	obj.cloud_img = lg.newImage("cloud1.png")
+	obj.cloud_img = lg.newImage("graphics/cloud1.png")
 
 	return setmetatable(obj, Ground)
 end

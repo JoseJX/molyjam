@@ -26,7 +26,7 @@ function Plane:new(x_pos, y_pos, min_altitude, max_altitude)
 	}
 
 	-- Load the plane sprite
-	obj.image = lg.newImage("plane.png")
+	obj.image = lg.newImage("graphics/plane.png")
 	obj.min_altitude = obj.min_altitude - obj.image:getHeight()
 
 	return setmetatable(obj, Plane)

@@ -25,7 +25,7 @@ function Stewardess:new(wpl, wpr)
 	}
 
 	-- Load all of the stewardess sprites
-	table.insert(obj.images, lg.newImage("stewardess.png"))
+	table.insert(obj.images, lg.newImage("graphics/stewardess.png"))
 	return setmetatable(obj, Stewardess)
 end
 

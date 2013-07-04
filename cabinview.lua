@@ -16,10 +16,10 @@ function CabinView:new()
 	}
 
 	-- Load the cabin sprite
-	obj.cabin = lg.newImage("cabin.png")
+	obj.cabin = lg.newImage("graphics/cabin.png")
 
 	-- Load the phone sprite
-	obj.phone = lg.newImage("phone.png")
+	obj.phone = lg.newImage("graphics/phone.png")
 
 	return setmetatable(obj, CabinView)
 end
