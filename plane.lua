@@ -12,6 +12,7 @@ function Plane:new(x_pos, y_pos)
 		y = y_pos,
 		angle = 0,
 		speed = 3,
+		entropy = 0, --   0 <= entropy <= 1
 	}
 
 	-- Load the plane sprite
@@ -27,6 +28,12 @@ function Plane:update(dt)
 	local dx = self.speed * math.sin(math.rad(angle))
 	local dy = self.speed * math.cos(math.rad(angle))
 
+	-- Entropy calculations
+	entropy = math.min(math.max(0, (self.x-10000)/10000), 1)
+	dx = dx + self.speed*(math.random(-0.5,0.5)*entropy)
+	dy = dy + self.speed*(math.random(-0.5,0.5)*entropy)
+	
+	-- Bound dx/dy to +/-5
 	dx = math.min(math.max(-5, dx), 5)
 	dy = math.min(math.max(-5, dy), 5)
 
@@ -55,7 +62,16 @@ function Plane:draw(max_altitude, max_distance, screen_height, screen_width)
 	lg.translate(screen_width/4 + self.image:getWidth()/2, screen_height/2 + self.image:getHeight()/2)
 	lg.rotate(math.rad(self.angle))
 	lg.translate(-(screen_width/4 + self.image:getWidth()/2), -(screen_height/2 + self.image:getHeight()/2))
-	lg.draw(self.image, screen_width/4, screen_height/2)	
+	if(self.y > max_altitude) then
+		lg.draw(self.image, screen_width/4, screen_height/2-(self.y-max_altitude))
+	elseif(self.y < 0) then
+		lg.draw(self.image, screen_width/4, screen_height/2-self.y)
+	else
+		lg.draw(self.image, screen_width/4, screen_height/2)
+	end
+	
+	--DEBUG
+	--lg.print(self.entropy, window_width*.4, UI_score_oft_V)
 
 	-- Restore the coordinate system
 	lg.pop()

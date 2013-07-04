@@ -114,7 +114,14 @@ end
 -- Drawing function, all drawing must be done from here!
 function love.draw()
 	-- Draw the Player 1 screen
-	g:draw(p["x"], p["y"], window_width/2, window_height)
+	if(p["y"]>height) then
+		g:draw(p["x"], height, window_width/2, window_height)
+	elseif(p["y"]<0) then
+		g:draw(p["x"], 0, window_width/2, window_height)
+	else
+		g:draw(p["x"], p["y"], window_width/2, window_height)
+	end
+	--g:draw(p["x"], p["y"], window_width/2, window_height)
 	p:draw(height, level, window_width/2, window_height)
 	
 	-- Draw the Player 2 screen
@@ -131,9 +138,15 @@ function love.draw()
 
 	-- Draw the UI text
 	lg.setColor(255,255,255,255)
-	lg.print("Player 1 Score: ", UI_score_oft_H, UI_score_oft_V)	
+	lg.print("Player 1 Score: ", UI_score_oft_H, UI_score_oft_V)
 	lg.print("Player 2 Score: ", window_width/2 + UI_score_oft_H + UI_divider_width, UI_score_oft_V)	
 
+	--DEBUG stuff
+	lg.print(p["angle"], window_width*.1, UI_score_oft_V)
+	lg.print(math.floor(p["x"]), window_width*.2, UI_score_oft_V)
+	lg.print(math.floor(p["y"]), window_width*.3, UI_score_oft_V)
+	lg.print(p["entropy"], window_width*.4, UI_score_oft_V)
+	
 	-- Draw the cabin view
 	cv:draw(window_width/2 + UI_divider_width, window_height - cv["image"]:getHeight())
 
