@@ -59,10 +59,24 @@ function Plane:update(dt)
 	self.y = self.y + dy
 
 	-- Correct when it goes too high/too low
-	-- FIXME Smooth this
+	-- FIXME Ceiling smoothing works/ground smoothing not an issue once crashing implemented
 	self.y = math.min(math.max(self.min_altitude, self.y), self.max_altitude - self.image:getHeight())
-	if(self.y == self.max_altitude - self.image:getHeight()) then
-		self.angle = 0
+	-- Flying too high
+	if(self.y >= self.max_altitude - window_height/2) then
+		-- Smooth forward
+		if(self.angle >= 270) then
+			self.angle = self.angle + 2
+			if(self.angle >= 360) then
+				self.angle = 0
+			end
+		-- Smooth backward
+		elseif(self.angle < 270 and self.angle > 180) then
+			self.angle = self.angle - 2
+			if(self.angle < 180) then
+				self.angle = 180
+			end
+		end
+	-- Flying too low
 	elseif(self.y == self.min_altitude) then
 		self.angle = 0
 	end
