@@ -51,8 +51,45 @@ end
 
 -- Keypress callbacks that aren't handled in the main update loop
 function love.keypressed(key, unicode)
+	-- Quit the game
 	if key == "escape" then
 		love.event.push('quit')
+	end
+
+	-- Increase throttle
+	if key == "up" then
+		p["speed"] = p["speed"] + 0.1
+		if p["speed"] > 8 then
+			p["speed"] = 8
+		end
+	end
+
+	-- Decrease throttle
+	if key == "down" then
+		p["speed"] = p["speed"] - 0.1
+		if p["speed"] < 3  then
+			p["speed"] = 3
+		end
+	end
+
+	-- DEBUG KEYS
+	-- Update text message
+	if key == "t" then
+		c:updateText(false)
+	end
+	-- Decrease entropy
+	if key == "[" then
+		p["entropy"] = p["entropy"] - .01
+		if(p["entropy"] < 0) then
+			p["entropy"] = 0
+		end
+	end
+	-- Increase entropy
+	if key == "]" then
+		p["entropy"] = p["entropy"] + .01
+		if(p["entropy"] > 1) then
+			p["entropy"] = 1
+		end
 	end
 end
 
@@ -66,20 +103,6 @@ end
 
 -- Main update loop
 function love.update(dt)
-	-- Slow down the plane
-	if lk.isDown("down") or lk.isDown("s") then
-		p["speed"] = p["speed"] - 0.1
-		if p["speed"] < 3  then
-			p["speed"] = 3
-		end
-	end
-	-- Speed up the plane
-	if lk.isDown("up") or lk.isDown("w") then
-		p["speed"] = p["speed"] + 0.1
-		if p["speed"] > 8 then
-			p["speed"] = 8
-		end
-	end
 	-- Pitch the plane up
 	if lk.isDown("right") or lk.isDown("d") then
 		p["angle"] = p["angle"] + 1
@@ -95,26 +118,11 @@ function love.update(dt)
 		end
 	end
 
-	-- DEBUG
-	if lk.isDown("w") then
-		p["entropy"] = p["entropy"] + .01
-		if(p["entropy"] > 1) then
-			p["entropy"] = 1
-		end
-	end
-
-	if lk.isDown("s") then
-		p["entropy"] = p["entropy"] - .01
-		if(p["entropy"] < 0) then
-			p["entropy"] = 0
-		end
-	end
-	
 	-- Update the plane status
 	p:update(dt)
 
-	-- Update the stewardess
-	cv.s:update(dt)
+	-- Update the cabin view
+	cv:update(dt)
 end
 
 -- Drawing function, all drawing must be done from here!

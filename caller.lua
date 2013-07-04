@@ -7,22 +7,29 @@ local Caller = {}
 Caller.__index = Caller
 
 local lg = love.graphics
+local caller_box_width = 160
+local caller_box_height = 250
+local caller_box_border = 10
 
 function Caller:new()
 	local obj = { 
-		-- Image data
-		images = {},
-		-- Caller data
-		callers = {},
 		-- Which caller is calling?
 		caller_id = 1,
+		-- Caller image data
+		images = {},
+		-- Caller script data
+		callers = {},
+		-- Current text the caller is saying
+		caller_text = "",
+		-- Current text the player is saying
+		player_text = "",	
 		-- Problem list
 		problems = {},	
 		-- Color text for fake conversations
 		pieces = {},
 		pauses = {},
 		responses = {},
-		last_conversation = { 0, 0},
+		last_conversation = { 0, 0 },
 		-- Buttons for interacting with the user
 		buttons = {},
 	}
@@ -33,8 +40,10 @@ function Caller:new()
 		if string.sub(file, -string.len("script")) == "script" then
 			for line in love.filesystem.lines('scripts/' .. file) do
 
-				print(line)
 			end
+			-- Load the caller image
+			local cpic_name = string.sub(file, 1, -(string.len("script")+1))
+			table.insert(obj.images, lg.newImage("graphics/" .. cpic_name .. "png"))
 		end
 	end
 
@@ -53,10 +62,8 @@ function Caller:new()
 	for line in love.filesystem.lines('scripts/conversation_responses') do
 		table.insert(obj.responses, line)
 	end
-			
-	--table.insert(obj.images, lg.newImage("bear.png"))
 
-	-- Load all of the text for each caller
+
 	-- FIXME
 	-- obj.text[1] = {}
 	-- table.insert(obj.text[1], "I'm so happy! I've been singing ALLLLLL day!")
@@ -75,12 +82,15 @@ function Caller:new()
 	return setmetatable(obj, Caller)
 end
 
--- FIXME: Add caller logic
--- For now, just swap text
-function Caller:update(dt)
-	self.next_text = self.next_text + 1
-	if(self.next_text > 2) then
-		self.next_text = 1
+-- Update the caller text
+function Caller:updateText(initial)
+	if(initial == true) then
+		-- FIXME
+		self.caller_text = "Hi."
+	else
+		-- Find out how many words to render
+		local words = math.random(5,7)
+		self.caller_text = self:getConversation(words, true)
 	end
 end
 
@@ -125,25 +135,61 @@ function Caller:getConversation(words, response)
 	self.last_conversation = { 0, 0 }
 
 	-- Upper case the first letter and add punctuation
-	c = c:sub(1,1):upper() .. c:sub(2) .. "."	
+	r = math.random()
+	if r < 0.33 then
+		c = c:sub(1,1):upper() .. c:sub(2) .. "."	
+	elseif r < 0.66 then
+		c = c:sub(1,1):upper() .. c:sub(2) .. "?"
+	else
+		c = c:sub(1,1):upper() .. c:sub(2) .. "!"
+	end
 
 	return c
 end
 
 -- Draw the caller image
-function Caller:draw(x, y)
-	x = 1280 - 160
-	y = 20
+function Caller:draw()
+	-- Get the draw area
+	local win_x, win_y, win_width, win_height = lg.getScissor()
+	local box_x = win_x + (win_width - (caller_box_width + caller_box_border/2))
+	local box_y = win_y + (win_height - caller_box_height)/2
+
+	-- Draw the speech bubble
+	local speech_x = win_x + caller_box_border/2
+	local speech_y = win_y + caller_box_border/2
+	local speech_w = win_width - (caller_box_border + caller_box_width + caller_box_border/2)
+	local speech_h = 30
+
+	lg.setColor(255,255,255,255)
+	lg.rectangle('fill', speech_x, speech_y, speech_w, speech_h)
+	lg.setColor(0,0,0,255)
+	lg.rectangle('line', speech_x, speech_y, speech_w, speech_h)
+
+	-- Draw the bubble spike
+	local bs_x1 = speech_x + speech_w - 2*caller_box_border
+	local bs_y1 = speech_y + speech_h - 3
+	local bs_x2 = bs_x1 + caller_box_border
+	local bs_y2 = bs_y1
+	local bs_x3 = box_x
+	local bs_y3 = box_y + caller_box_height/4
+	lg.setColor(255,255,255,255)
+	lg.polygon('fill', bs_x1, bs_y1, bs_x2, bs_y2, bs_x3, bs_y3)
+	lg.setColor(0,0,0,255)
+	lg.line(bs_x1, bs_y1, bs_x3, bs_y3)
+	lg.line(bs_x2, bs_y2, bs_x3, bs_y3)
+	
 	-- Draw the bounding box
 	lg.setColor(255,128,0,255)
-	lg.rectangle('fill', x, y, 160, 248)
+	lg.rectangle('fill', box_x, box_y, caller_box_width, caller_box_height)
 	lg.setColor(255,255,255,255)
-	lg.rectangle('fill', x+5, y+5, 150, 238)
-	-- lg.draw(self.images[self.caller_id], x + 5, y + 4)
+	lg.rectangle('fill', box_x + caller_box_border/2, box_y + caller_box_border/2, caller_box_width - caller_box_border, caller_box_height - caller_box_border)
+	-- Draw the character
+	lg.draw(self.images[self.caller_id], box_x + caller_box_border/2, box_y + caller_box_border/2)
 	
 	-- Flavor text 
-	--lg.setColor(255,255,255,255)
-	--lg.print(c:getText(), window_width/2 + UI_divider_width * 2, UI_bar_height + 10)
+	lg.setColor(0,0,0,255)
+	lg.print(self.caller_text, speech_x + caller_box_border/2, speech_y + caller_box_border/2)
+
 	-- Buttons
 	--for button_id, button in ipairs(buttons) do
 	--	button:draw()
