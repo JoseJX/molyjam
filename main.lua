@@ -2,7 +2,6 @@ local Ground = require 'ground'
 local Plane = require 'plane'
 local CabinView = require 'cabinview'
 local Caller = require 'caller'
-local Button = require 'button'
 local Stewardess = require 'stewardess'
 local lg = love.graphics
 local lk = love.keyboard
@@ -30,10 +29,6 @@ local UI_right_panel_x = UI_player_window_width + UI_divider_width
 
 draw_ct = 0
 
--- Buttons in the UI
-buttons = {}
-text = "Waiting for call..."
-
 -- Load the game data on program start
 function love.load()
 	-- Generate terrain
@@ -55,16 +50,6 @@ function love.load()
 	-- Load the callers
 	c = Caller:new()
 
-	-- Make some buttons
-	for i=1,4 do
-		table.insert(buttons, Button:new("Button #" .. i, window_width / 2 + UI_divider_width * 2, UI_bar_height + UI_button_start_height + (UI_button_spacer * (i-1)), UI_button_width, UI_button_height))	
-	end
-
-	-- Set the button text
-	buttons[1]:setText("Do you even lift?")
-	buttons[2]:setText("That's how your mother likes it!")
-	buttons[3]:setText("I know you are, but what am I?")
-	buttons[4]:setText("How appropriate, you fight like a cow!")
 end
 
 -- Keypress callbacks that aren't handled in the main update loop
@@ -90,33 +75,36 @@ end
 
 -- Main update loop
 function love.update(dt)
-	if lk.isDown("down") then
+	-- Slow down the plane
+	if lk.isDown("down") or lk.isDown("s") then
 		p["speed"] = p["speed"] - 0.1
 		if p["speed"] < 3  then
 			p["speed"] = 3
 		end
 	end
-	if lk.isDown("up") then
+	-- Speed up the plane
+	if lk.isDown("up") or lk.isDown("w") then
 		p["speed"] = p["speed"] + 0.1
 		if p["speed"] > 8 then
 			p["speed"] = 8
 		end
 	end
-
-	if lk.isDown("right") then
+	-- Pitch the plane up
+	if lk.isDown("right") or lk.isDown("d") then
 		p["angle"] = p["angle"] + 1
 		if(p["angle"] > 360) then
 			p["angle"] = p["angle"] - 360
 		end
 	end
-
-	if lk.isDown("left") then
+	-- Pitch the plane down
+	if lk.isDown("left") or lk.isDown("a") then
 		p["angle"] = p["angle"] - 1
 		if(p["angle"] < 0) then
 			p["angle"] = p["angle"] + 360
 		end
 	end
 
+	-- DEBUG
 	if lk.isDown("w") then
 		p["entropy"] = p["entropy"] + .01
 		if(p["entropy"] > 1) then
@@ -140,38 +128,37 @@ end
 
 -- Drawing function, all drawing must be done from here!
 function love.draw()
+	---------------------------
 	-- Draw the Player 1 screen
+	---------------------------
 	lg.setScissor(0, UI_bar_height, UI_player_window_width, UI_player_window_height)
 	-- Ground
 	g:draw(p["x"], p["y"])
 	-- Plane
 	p:draw(height, level)
 	
+	---------------------------
 	-- Draw the Player 2 screen
+	---------------------------
+	-- Cabin view
 	lg.setScissor(UI_player_window_width + UI_divider_width, UI_bar_height, UI_player_window_width, UI_player_window_height)
 	lg.setColor(128,128,128,255)
 	lg.rectangle('fill', window_width/2, 0, window_width/2, window_height)
-
-	-- Cabin view
 	cv:draw()
-	-- Caller
-	c:draw(window_width - 160, UI_bar_height)
-	-- Stewardess
-	cv.s:draw()
-	-- Flavor text 
-	lg.setColor(255,255,255,255)
-	lg.print(c:getText(), window_width/2 + UI_divider_width * 2, UI_bar_height + 10)
-	-- Buttons
-	for button_id, button in ipairs(buttons) do
-		button:draw()
-	end
+
+	-- Caller Window
+	lg.setScissor(UI_player_window_width + UI_divider_width, UI_bar_height, UI_player_window_width, UI_player_window_height - cv.cabin:getHeight())
+	c:draw()
 	
+	--------------
+	-- Draw the UI
+	--------------
 	-- Draw the divider line between the two screens
 	lg.setScissor(0,0,lg.getWidth(),lg.getHeight())
 	lg.setColor(255,255,0,255)
 	lg.rectangle('fill', window_width/2 - UI_divider_width/2, 0, UI_divider_width, window_height)
 	
-	-- Draw the UI
+	-- Draw the score bar
 	lg.setColor(0,0,0,255)
 	lg.rectangle('fill', 0, 0, window_width, UI_bar_height)
 

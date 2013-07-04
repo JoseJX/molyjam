@@ -9,13 +9,18 @@ local lg = love.graphics
 function CabinView:new()
 	local obj = { 
 		-- Image data
-		image = nil,	
+		cabin = nil,	
+		phone = nil,
 		-- Stewardess
 		s = nil
 	}
 
 	-- Load the cabin sprite
-	obj.image = lg.newImage("cabin.png")
+	obj.cabin = lg.newImage("cabin.png")
+
+	-- Load the phone sprite
+	obj.phone = lg.newImage("phone.png")
+
 	return setmetatable(obj, CabinView)
 end
 
@@ -28,7 +33,8 @@ end
 function CabinView:draw()
 	win_x, win_y, win_width, win_height = lg.getScissor()
 	lg.setColor(255,255,255,255)
-	lg.draw(self.image, win_x, win_height - self.image:getHeight())
+	lg.draw(self.cabin, win_x, win_height - self.cabin:getHeight())
+	lg.draw(self.phone, win_x, win_height)
 	self.s:draw()
 end
 

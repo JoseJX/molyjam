@@ -1,9 +1,10 @@
 RELEASE_NAME=test
 
-LUA_FILES=main.lua ground.lua plane.lua conf.lua cabinview.lua caller.lua button.lua
-DATA_FILES=plane.png cloud1.png bear.png cabin.png
+LUA_FILES=main.lua ground.lua plane.lua conf.lua cabinview.lua caller.lua button.lua stewardess.lua bar.lua utils.lua
+DATA_FILES=plane.png cloud1.png cabin.png stewardess.png phone.png
+SCRIPT_FILES=scripts/*
 
-FILELIST=${LUA_FILES} ${DATA_FILES}
+FILELIST=${LUA_FILES} ${DATA_FILES} ${SCRIPT_FILES}
 
 all: love 
 
