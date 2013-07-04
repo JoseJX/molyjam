@@ -54,16 +54,11 @@ end
 -- We got a mouse press, check to see if we need to update anything
 function CabinView:mousepressed(x,y,button)
 	if self.button_hide.visible == true and self.button_hide:check(x, y, button) then
-		self.phone_state = "hiding"
+		return "hiding"
 	end
 	if self.button_talk.visible == true and self.button_talk:check(x, y, button) then
-		self.phone_state = "talking"
+		return "talking"
 	end
-end
-
--- Set the state of the phone user
-function CabinView:phoneState(state)
-	self.phone_state = state
 end
 
 -- We always draw the cabin view at the bottom of the right panel, possibly add rotation here
@@ -73,13 +68,10 @@ function CabinView:draw()
 	-- Draw the cabin
 	lg.draw(self.cabin, win_x, win_y)
 	-- Draw the phone
-	if self.phone_state == "hiding" then
+	if c.phone_state == "hiding" then
 		lg.draw(self.phone, win_x + 300, win_y + 307)
 	else
 		lg.draw(self.phone, win_x + 194, win_y + 94)
-
-		-- Draw a speech bubble
-		-- FIXME
 	end
 	
 	-- Draw the buttons

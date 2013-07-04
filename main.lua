@@ -56,46 +56,17 @@ function love.keypressed(key, unicode)
 		love.event.push('quit')
 	end
 
-	-- Increase throttle
-	if key == "up" then
-		p["speed"] = p["speed"] + 0.1
-		if p["speed"] > 8 then
-			p["speed"] = 8
-		end
-	end
-
-	-- Decrease throttle
-	if key == "down" then
-		p["speed"] = p["speed"] - 0.1
-		if p["speed"] < 3  then
-			p["speed"] = 3
-		end
-	end
-
 	-- DEBUG KEYS
 	-- Update text message
 	if key == "t" then
-		c:updateText(false)
-	end
-	-- Decrease entropy
-	if key == "[" then
-		p["entropy"] = p["entropy"] - .01
-		if(p["entropy"] < 0) then
-			p["entropy"] = 0
-		end
-	end
-	-- Increase entropy
-	if key == "]" then
-		p["entropy"] = p["entropy"] + .01
-		if(p["entropy"] > 1) then
-			p["entropy"] = 1
-		end
+		c:updateText(false, "player")
+		c:updateText(false, "caller")
 	end
 end
 
 -- Mouse press callbacks
 function love.mousepressed(x, y, button)
-	cv:mousepressed(x, y, true)
+	c.phone_state = cv:mousepressed(x, y, true)
 end
 function love.mousereleased(x, y, button)
 	cv:mousepressed(x, y, false)
@@ -117,7 +88,43 @@ function love.update(dt)
 			p["angle"] = p["angle"] + 360
 		end
 	end
+	-- Increase throttle
+	if lk.isDown("up") then
+		p["speed"] = p["speed"] + 0.1
+		if p["speed"] > 8 then
+			p["speed"] = 8
+		end
+	end
+	-- Decrease throttle
+	if lk.isDown("down") then
+		p["speed"] = p["speed"] - 0.1
+		if p["speed"] < 3  then
+			p["speed"] = 3
+		end
+	end
 
+	--------------------
+	-- DEBUG keys
+	--------------------
+	
+	-- Decrease entropy
+	if lk.isDown("[") then
+		p["entropy"] = p["entropy"] - .1
+		if(p["entropy"] < 0) then
+			p["entropy"] = 0
+		end
+	end
+	-- Increase entropy
+	if lk.isDown("]") then
+		p["entropy"] = p["entropy"] + .1
+		if(p["entropy"] > 1) then
+			p["entropy"] = 1
+		end
+	end
+
+	------------------
+	-- Update statuses
+	------------------
 	-- Update the plane status
 	p:update(dt)
 

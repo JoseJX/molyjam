@@ -7,9 +7,9 @@ local Caller = {}
 Caller.__index = Caller
 
 local lg = love.graphics
-local caller_box_width = 160
-local caller_box_height = 250
 local caller_box_border = 10
+local caller_box_width = 125 + caller_box_border
+local caller_box_height = 200 + caller_box_border
 
 function Caller:new()
 	local obj = { 
@@ -32,6 +32,8 @@ function Caller:new()
 		last_conversation = { 0, 0 },
 		-- Buttons for interacting with the user
 		buttons = {},
+		-- Phone state (talking or not)
+		phone_state = "talking",
 	}
 
 	-- Load all of the caller data
@@ -63,6 +65,12 @@ function Caller:new()
 		table.insert(obj.responses, line)
 	end
 
+	obj = setmetatable(obj, Caller)
+
+	-- Initialize the player text
+	obj:updateText(false, "player")
+	obj:updateText(false, "caller")
+
 
 	-- FIXME
 	-- obj.text[1] = {}
@@ -79,18 +87,29 @@ function Caller:new()
 	-- buttons[2]:setText("That's how your mother likes it!")
 	-- buttons[3]:setText("I know you are, but what am I?")
 	-- buttons[4]:setText("How appropriate, you fight like a cow!")
-	return setmetatable(obj, Caller)
+	return obj
 end
 
 -- Update the caller text
-function Caller:updateText(initial)
-	if(initial == true) then
-		-- FIXME
-		self.caller_text = "Hi."
+function Caller:updateText(initial, who)
+	if who == "caller" then
+		if(initial == true) then
+			-- FIXME
+			self.caller_text = "Hi."
+		else
+			-- Find out how many words to render
+			local words = math.random(5,7)
+			self.caller_text = self:getConversation(words, true)
+		end
 	else
-		-- Find out how many words to render
-		local words = math.random(5,7)
-		self.caller_text = self:getConversation(words, true)
+		if(initial == true) then
+			-- FIXME
+			self.player_text = "Hi."
+		else
+			-- Find out how many words to render
+			local words = math.random(5,7)
+			self.player_text = self:getConversation(words, false)
+		end
 	end
 end
 
@@ -153,11 +172,24 @@ function Caller:draw()
 	local win_x, win_y, win_width, win_height = lg.getScissor()
 	local box_x = win_x + (win_width - (caller_box_width + caller_box_border/2))
 	local box_y = win_y + (win_height - caller_box_height)/2
+	
+	--------------------
+	-- Draw the portrait
+	--------------------
+	-- Draw the bounding box
+	lg.setColor(255,128,0,255)
+	lg.rectangle('fill', box_x, box_y, caller_box_width, caller_box_height)
+	lg.setColor(255,255,255,255)
+	lg.rectangle('fill', box_x + caller_box_border/2, box_y + caller_box_border/2, caller_box_width - caller_box_border, caller_box_height - caller_box_border)
+	-- Draw the character
+	lg.draw(self.images[self.caller_id], box_x + caller_box_border/2, box_y + caller_box_border/2)
 
+	-------------------------
 	-- Draw the speech bubble
+	-------------------------
 	local speech_x = win_x + caller_box_border/2
 	local speech_y = win_y + caller_box_border/2
-	local speech_w = win_width - (caller_box_border + caller_box_width + caller_box_border/2)
+	local speech_w = win_width - caller_box_border
 	local speech_h = 30
 
 	lg.setColor(255,255,255,255)
@@ -166,31 +198,60 @@ function Caller:draw()
 	lg.rectangle('line', speech_x, speech_y, speech_w, speech_h)
 
 	-- Draw the bubble spike
-	local bs_x1 = speech_x + speech_w - 2*caller_box_border
+	local bs_x1 = box_x + caller_box_width/2 + caller_box_border/2
 	local bs_y1 = speech_y + speech_h - 3
 	local bs_x2 = bs_x1 + caller_box_border
 	local bs_y2 = bs_y1
-	local bs_x3 = box_x
-	local bs_y3 = box_y + caller_box_height/4
+	local bs_x3 = box_x + caller_box_width/2
+	local bs_y3 = box_y + caller_box_border
 	lg.setColor(255,255,255,255)
 	lg.polygon('fill', bs_x1, bs_y1, bs_x2, bs_y2, bs_x3, bs_y3)
 	lg.setColor(0,0,0,255)
 	lg.line(bs_x1, bs_y1, bs_x3, bs_y3)
 	lg.line(bs_x2, bs_y2, bs_x3, bs_y3)
-	
-	-- Draw the bounding box
-	lg.setColor(255,128,0,255)
-	lg.rectangle('fill', box_x, box_y, caller_box_width, caller_box_height)
-	lg.setColor(255,255,255,255)
-	lg.rectangle('fill', box_x + caller_box_border/2, box_y + caller_box_border/2, caller_box_width - caller_box_border, caller_box_height - caller_box_border)
-	-- Draw the character
-	lg.draw(self.images[self.caller_id], box_x + caller_box_border/2, box_y + caller_box_border/2)
-	
-	-- Flavor text 
+
+	-- Draw the text
 	lg.setColor(0,0,0,255)
 	lg.print(self.caller_text, speech_x + caller_box_border/2, speech_y + caller_box_border/2)
+	
+	----------------------------------------
+	-- Draw the speech bubble for the player
+	----------------------------------------
+	if self.phone_state == "talking" then
+		speech_y = win_y + win_height - speech_h
 
+		-- Temporarily adjust the scissor so we can draw the speech bubble
+		lg.setScissor(win_x, win_y, win_width, window_height - win_y)
+
+		lg.setColor(255,255,255,255)
+		lg.rectangle('fill', speech_x, speech_y, speech_w, speech_h)
+		lg.setColor(0,0,0,255)
+		lg.rectangle('line', speech_x, speech_y, speech_w, speech_h)
+
+		-- Draw the spike
+		bs_x1 = speech_x + speech_w/2 - caller_box_border/2
+		bs_y1 = speech_y + speech_h - 3
+		bs_x2 = bs_x1 + caller_box_border
+		bs_y2 = bs_y1
+		bs_x3 = bs_x1 + caller_box_border/2
+		bs_y3 = bs_y1 + (window_height - win_height) / 4
+		lg.setColor(255,255,255,255)
+		lg.polygon('fill', bs_x1, bs_y1, bs_x2, bs_y2, bs_x3, bs_y3)
+		lg.setColor(0,0,0,255)
+		lg.line(bs_x1, bs_y1, bs_x3, bs_y3)
+		lg.line(bs_x2, bs_y2, bs_x3, bs_y3)
+	
+		-- Reset the scissor
+		lg.setScissor(win_x, win_y, win_width, win_height)
+
+		-- Draw the text
+		lg.setColor(0,0,0,255)
+		lg.print(self.player_text, speech_x + caller_box_border/2, speech_y + caller_box_border/2)
+	end
+
+	---------------------
 	-- Buttons
+	---------------------
 	--for button_id, button in ipairs(buttons) do
 	--	button:draw()
 	--end
