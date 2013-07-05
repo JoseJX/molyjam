@@ -160,7 +160,7 @@ function love.draw()
 	lg.print(p["angle"], window_width*.1, UI_score_oft_V)
 	lg.print(math.floor(p["x"]), window_width*.2, UI_score_oft_V)
 	lg.print(math.floor(p["y"]), window_width*.3, UI_score_oft_V)
-	lg.print(math.floor(p["entropy"]), window_width*.4, UI_score_oft_V)
+	lg.print(p["entropy"], window_width*.4, UI_score_oft_V)
 	
 	-- Draw the cabin view
 	cv:draw(window_width/2 + UI_divider_width, window_height - cv["image"]:getHeight())
