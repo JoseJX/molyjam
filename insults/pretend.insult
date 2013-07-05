@@ -1,0 +1,38 @@
+-- All comment lines start with --
+-- Name of the insult
+name: Pretend to Help
+-- Level required to use this insult
+level: 1
+-- Damage done by casting the insult
+damage: 50
+-- Multiplier for a critical hit
+critical: 1.10
+-- Cost to cast insult
+cost: 20
+-- # of hits in an insult
+combo: 1
+-- Success rate
+rate: 0.25
+---------------------------------------------------------------------
+-- Another name in a file indicates that this is an upgrade, the format is the same
+name: Vigorously Obstruct
+level: 2
+damage: 60
+critical: 1.25
+cost: 25
+combo: 1
+rate: 0.35
+-----
+name: Actively Sabotage
+level: 3
+damage: 70
+critical: 1.5
+cost: 30
+combo: 1
+rate: 0.40
+-----
+-- These insult lines are used to fill in the text bubbles when you cast an insult
+-- Indicate the level that they're appropriate for with a number as the first digit
+1 Did you try unplugging it? You did? Can you try again?
+2 Are you sure you plugged it in? Check again, the poles might be reversed.
+3 Yes, delete the folder named system32, that's where the problem is!

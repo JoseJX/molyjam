@@ -1,0 +1,27 @@
+name: Offhanded Remarks
+level: 1
+damage: 10
+critical: 1.5
+cost: 10
+combo: 3
+rate: 0.45
+-----
+name: Insulting Remarks
+level: 2
+damage: 15
+critical: 1.5
+cost: 15
+combo: 3
+rate: 0.50
+-----
+name: Soul Crushing Remarks
+level: 3
+damage: 20
+critical: 2
+cost: 25
+combo: 5
+rate: 0.55
+-----
+1 My dog had this problem last week. He fixed it himself.
+2 My dog fixed this problem last week. He licks hismself regularly.
+3 My dog regularly poops out more intelligent comments than that.

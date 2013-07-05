@@ -1,0 +1,27 @@
+name: Trite Observation
+level: 1
+damage: 30
+critical: 2
+cost: 10
+combo: 1
+rate: 0.50
+-----
+name: Personal Observation
+level: 2
+damage: 40
+critical: 3
+cost: 15
+combo: 1
+rate: 0.55
+-----
+name: Blunt Observation
+level: 3
+damage: 50
+critical: 5
+cost: 20
+combo: 1
+rate: 0.60
+-----
+1 Is it just me, or do you sound a lot like Urkel?
+2 If you had any brains, you'd be fixing this yourself.
+3 I've heard that you ate a lot of paint chips as a child, this call confirms it.

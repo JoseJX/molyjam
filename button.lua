@@ -12,6 +12,9 @@ function Button:new(text, x_pos, y_pos, width, height)
 		x = x_pos or 0,
 		y = y_pos or 0,
 		visible = true,
+		color = { 0, 0, 0, 255 },
+		bg_color = { 255,255,255,255 },
+
 	}
 
 	-- Load all of the caller images
@@ -43,23 +46,23 @@ end
 -- FIXME make the text printing less brittle...
 function Button:draw()
 	-- Draw the outer rim
-	lg.setColor(40, 40, 40, 255)
+	lg.setColor(self.color)
 	lg.rectangle('fill', self.x, self.y, self.width, self.height)
 	-- If we're pressed, invert the render
 	if self.state then
 		-- Draw the inside
-		lg.setColor(0,0,0,255)
+		lg.setColor(self.color)
 		lg.rectangle('fill', self.x + 5, self.y + 5, self.width - 10, self.height - 10)
 		-- Draw the text
-		lg.setColor(255,255,255,255)
+		lg.setColor(self.bg_color)
 		lg.print(self.text, self.x + 10, self.y + 10)
 	else
 		-- Draw the inside
-		lg.setColor(255,255,255,255)
+		lg.setColor(self.bg_color)
 		lg.rectangle('fill', self.x + 5, self.y + 5, self.width - 10, self.height - 10)
 
 		-- Draw the text
-		lg.setColor(0,0,0,255)
+		lg.setColor(self.color)
 		lg.print(self.text, self.x + 10, self.y + 10)
 	end
 end

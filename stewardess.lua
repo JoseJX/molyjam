@@ -22,10 +22,12 @@ function Stewardess:new(wpl, wpr)
 		walk_path_left = wpl,
 		walk_path_right = wpr,
 		walk_distance = wpr - wpl,
+		width = 0
 	}
 
 	-- Load all of the stewardess sprites
 	table.insert(obj.images, lg.newImage("graphics/stewardess.png"))
+	obj.width = obj.images[1]:getWidth()
 	return setmetatable(obj, Stewardess)
 end
 
@@ -50,11 +52,11 @@ function Stewardess:update(dt)
 				self.direction = "left"
 			end
 		else
+			self.x = self.x - self.speed
 			if self.x < 0 then
 				self.state = "Waiting"
 				self.direction = "right"
 			end
-			self.x = self.x - self.speed
 		end
 
 		-- See if we need to react
