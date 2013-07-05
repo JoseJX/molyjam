@@ -22,12 +22,14 @@ function Stewardess:new(wpl, wpr)
 		walk_path_left = wpl,
 		walk_path_right = wpr,
 		walk_distance = wpr - wpl,
-		width = 0
+		width = 0,
+		height = 0,
 	}
 
 	-- Load all of the stewardess sprites
 	table.insert(obj.images, lg.newImage("graphics/stewardess.png"))
 	obj.width = obj.images[1]:getWidth()
+	obj.height = obj.images[1]:getHeight()
 	return setmetatable(obj, Stewardess)
 end
 
@@ -70,9 +72,9 @@ function Stewardess:draw()
 		local x = self.x + self.walk_path_left
 		lg.setColor(255,255,255,255)
 		if (self.direction == "right") then	
-			lg.draw(self.images[1], x, lg.getHeight() - (self.images[1]:getHeight() + 5), 0, 1, 1)
+			lg.draw(self.images[1], x, lg.getHeight() - (self.height + 5), 0, 1, 1)
 		else
-			lg.draw(self.images[1], x, lg.getHeight() - (self.images[1]:getHeight() + 5), 0, -1, 1)
+			lg.draw(self.images[1], x, lg.getHeight() - (self.height + 5), 0, -1, 1)
 		end
 	end
 end

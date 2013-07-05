@@ -8,9 +8,9 @@ CabinView.__index = CabinView
 local lg = love.graphics
 
 local phone_states = {
-	"hiding",
-	"talking",
-	"caught"
+	"Hiding",
+	"Talking",
+	"Caught"
 }
 
 local UI_ht_button_height = 30
@@ -22,7 +22,7 @@ function CabinView:new(wpl, wpr, y)
 		phone = nil,
 
 		-- State of the phone user
-		phone_state = "hiding",
+		phone_state = "Hiding",
 
 		-- Stewardess
 		s = nil,
@@ -56,12 +56,21 @@ end
 function CabinView:update(dt)
 	self.s:update(dt)
 	-- Check if the player is using the phone when the stewardess is there?
-	local left_side = ((self.wpr - self.wpl) / 3) - self.s.width 
-	local right_side = (2*(self.wpr - self.wpl) / 3)
-	print(self.s.x, left_side, right_side)
-	if self.s.x > left_side and self.s.x < right_side and self.phone_state == "talking" then
-		self.phone_state = "caught"
-		print ("Caught")
+	if self.phone_state == "Talking" and self.s.state == "Walking" then
+		local left_side = ((self.wpr - self.wpl) / 3) - self.s.width 
+		local right_side = (2*(self.wpr - self.wpl) / 3)
+		print(self.s.x, left_side, right_side)
+		if self.s.x > left_side and self.s.x < right_side and self.s.direction == "right" then
+			self.phone_state = "Caught"
+			print ("Caught")
+		end
+		left_side = ((self.wpr - self.wpl) / 3) + self.s.width
+		right_side = (2*(self.wpr - self.wpl) / 3) + self.s.width 
+		print(self.s.x, left_side, right_side)
+		if self.s.x > left_side and self.s.x < right_side and self.s.direction == "left" then
+			self.phone_state = "Caught"
+			print ("Caught")
+		end
 	end
 end
 
@@ -69,15 +78,15 @@ end
 function CabinView:mousepressed(x,y,button)
 	if self.button_hide.visible == true and self.button_hide:check(x, y, button) then
 		if self.button_hide.state == true then
-			self.phone_state = "hiding"
+			self.phone_state = "Hiding"
 		end
-		return "hiding"
+		return "Hiding"
 	end
 	if self.button_talk.visible == true and self.button_talk:check(x, y, button) then
 		if self.button_talk.state == true then
-			self.phone_state = "talking"
+			self.phone_state = "Talking"
 		end
-		return "talking"
+		return "Talking"
 	end
 end
 
@@ -89,15 +98,16 @@ function CabinView:draw()
 	lg.draw(self.cabin, win_x, win_y)
 
 	-- Draw the phone in the correct position
-	if self.phone_state == "hiding" then
+	if self.phone_state == "Hiding" then
 		-- Draw the phone under the seat
 		lg.draw(self.phone, win_x + 300, win_y + 307)
 	else
 		-- Draw the phone in use
 		lg.draw(self.phone, win_x + 194, win_y + 94)
-		if self.phone_state == "caught" then
+		if self.phone_state == "Caught" then
 			lg.setColor(255,0,0,64)
-			lg.rectangle('fill', win_x + win_width/3, win_y, win_width/3, win_height)
+--			lg.rectangle('fill', win_x + win_width/3, win_y, win_width/3, win_height)
+			lg.rectangle('fill', win_x, win_y, win_width, win_height)
 		end
 	end
 	

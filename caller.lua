@@ -35,14 +35,14 @@ function Caller:new()
 		battle_buttons = {},
 		inventory_buttons = {},
 		-- Phone state (talking or not)
-		phone_state = "talking",
+		phone_state = "Hiding",
 		-- Inventory
 		inventory = {},
 		items = {},
 	}
 
 	-- Load all of the caller data
-	files = love.filesystem.enumerate('scripts') 
+	local files = love.filesystem.enumerate('scripts') 
 	for id,file in pairs(files) do
 		if string.sub(file, -string.len("script")) == "script" then
 			for line in love.filesystem.lines('scripts/' .. file) do
@@ -68,6 +68,12 @@ function Caller:new()
 	end
 	for line in love.filesystem.lines('scripts/conversation_responses') do
 		table.insert(obj.responses, line)
+	end
+
+	-- Load the insult data
+	files = love.filesystem.enumerate('insults')
+	for id,file in pairs(files) do
+		
 	end
 
 	obj = setmetatable(obj, Caller)
@@ -225,7 +231,7 @@ function Caller:draw()
 		----------------------------------------
 		-- Draw the speech bubble for the player
 		----------------------------------------
-		if self.phone_state == "talking" then
+		if self.phone_state == "Talking" then
 			speech_y = win_y + win_height - speech_h
 	
 			-- Temporarily adjust the scissor so we can draw the speech bubble
