@@ -108,6 +108,21 @@ function love.update(dt)
 			p["angle"] = p["angle"] + 360
 		end
 	end
+
+	if lk.isDown("w") then
+		p["entropy"] = p["entropy"] + .01
+		if(p["entropy"] > 1) then
+			p["entropy"] = 1
+		end
+	end
+
+	if lk.isDown("s") then
+		p["entropy"] = p["entropy"] - .01
+		if(p["entropy"] < 0) then
+			p["entropy"] = 0
+		end
+	end
+	
 	p:update(dt)
 end
 
@@ -145,7 +160,7 @@ function love.draw()
 	lg.print(p["angle"], window_width*.1, UI_score_oft_V)
 	lg.print(math.floor(p["x"]), window_width*.2, UI_score_oft_V)
 	lg.print(math.floor(p["y"]), window_width*.3, UI_score_oft_V)
-	lg.print(p["entropy"], window_width*.4, UI_score_oft_V)
+	lg.print(math.floor(p["entropy"]), window_width*.4, UI_score_oft_V)
 	
 	-- Draw the cabin view
 	cv:draw(window_width/2 + UI_divider_width, window_height - cv["image"]:getHeight())
