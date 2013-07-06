@@ -11,11 +11,11 @@ local caller_box_border = 10
 local caller_box_width = 125 + caller_box_border
 local caller_box_height = 200 + caller_box_border
 
-function Caller:new()
+function Caller:new(caller_rate)
 	local obj = { 
 		-- Which caller is calling?
 		-- If 0, no active caller
-		caller_id = 1,
+		caller_id = 0,
 		-- Caller image data
 		images = {},
 		-- Caller script data
@@ -30,7 +30,8 @@ function Caller:new()
 		pieces = {},
 		pauses = {},
 		responses = {},
-		last_conversation = { 0, 0 },
+		-- Insults
+		insults = {},
 		-- Buttons for interacting with the user
 		battle_buttons = {},
 		inventory_buttons = {},
@@ -39,6 +40,15 @@ function Caller:new()
 		-- Inventory
 		inventory = {},
 		items = {},
+		-- Caller patience bar
+		caller_bar = nil,
+		-- Player points
+		player_thinkpoints = nil,
+		-- Rate that new callers call in 
+		caller_rate = caller_rate,
+		-- Caller answer buttons
+		answer_button = nil,
+		refuse_button = nil,
 	}
 
 	-- Load all of the caller data
@@ -46,7 +56,38 @@ function Caller:new()
 	for id,file in pairs(files) do
 		if string.sub(file, -string.len("script")) == "script" then
 			for line in love.filesystem.lines('scripts/' .. file) do
+				local c = {
+					text = {}
+				}
+				-- Ignore comments
+				if string.sub(line, 1, 2) == "--" then
+					-- Nothing
+				elseif string.sub(line, 1, 5) == "name:" then
+					c.name = string.sub(line, 1, 6)
+				elseif string.sub(line, 1, 9) == "patience:" then
+					c.patience = string.sub(line, 1, 10)
+				elseif string.sub(line, 1, 6) == "intro:" then
+					c.intro = string.sub(line, 1, 7) 
+				elseif string.sub(line, 1, 4) == "win:" then
+					c.win = string.sub(line, 1, 5)
+				elseif string.sub(line, 1, 5) == "lost:" then
+					c.lost = string.sub(line, 1,6)
+				-- All other lines, based on the level of response
+				else
+					local level = tonumber(string.sub(line, 1, 1))
+					
+					-- It's some text for an insult
+					if not (level == nil) and level > 0 and level <= 9 then
+						if c.text[level] == nil then
+							c.text[level] = {}
+						end
+						table.insert(c.text[level], string.sub(line, 3))
+					else
+						print("Malformed script line: " .. line)
+					end	
 
+				end
+				table.insert(obj.callers, c)
 			end
 			-- Load the caller image
 			local cpic_name = string.sub(file, 1, -(string.len("script")+1))
@@ -71,9 +112,60 @@ function Caller:new()
 	end
 
 	-- Load the insult data
+		-- Insults are organized like this:
+		-- insult[1] => {
+		-- 	"name" => Insult Name,
+		-- 	"level" => 1,
+		-- 	"damage" => 10,
+		-- 	"critical" => 1.5,
+		-- 	"cost" => 10,
+		-- 	"combo" => 3,
+		-- 	"rate" => 0.45,
+		-- 	"text" => {
+		-- 		...
+		-- 	}
+		-- }
+
 	files = love.filesystem.enumerate('insults')
 	for id,file in pairs(files) do
-		
+		if string.sub(file, -string.len("insult")) == "insult" then
+			local current_insult = 0
+			for line in love.filesystem.lines('insults/' .. file) do
+				-- Ignore comments
+				if string.sub(line, 1, 2) == "--" then
+					-- Nothing
+				elseif string.sub(line, 1, 5) == "name:" then
+					current_insult = current_insult + 1		
+					obj.insults[current_insult] = {}
+					obj.insults[current_insult].text = {}
+					obj.insults[current_insult].name = string.sub(file, 6)
+				elseif string.sub(line, 1, 6) == "level:" then
+					obj.insults[current_insult].level = string.sub(file, 7)
+				elseif string.sub(line, 1, 7) == "damage:" then
+					obj.insults[current_insult].damage = string.sub(file, 8)
+				elseif string.sub(line, 1, 5) == "cost:" then
+					obj.insults[current_insult].damage = string.sub(file, 6)
+				elseif string.sub(line, 1, 6) == "combo:" then
+					obj.insults[current_insult].damage = string.sub(file, 7)
+				elseif string.sub(line, 1, 5) == "rate:" then
+					obj.insults[current_insult].damage = string.sub(file, 6)
+				elseif string.sub(line, 1, 9) == "critical:" then
+					obj.insults[current_insult].critical = string.sub(file, 10)
+				else
+					local level = tonumber(string.sub(line, 1, 1))
+					
+					-- It's some text for an insult
+					if not (level == nil) and level > 0 and level <= 9 then
+						if obj.insults[current_insult].text[level] == nil then
+							obj.insults[current_insult].text[level] = {}
+						end
+						table.insert(obj.insults[current_insult].text[level], string.sub(line, 3))
+					else
+						print ("Malformed insult line: " .. line)
+					end
+				end
+			end
+		end
 	end
 
 	obj = setmetatable(obj, Caller)
@@ -82,8 +174,9 @@ function Caller:new()
 	obj:updateText(false, "player")
 	obj:updateText(false, "caller")
 
-	-- Configure the buttons
-	
+	-- Configure the anser/refuse buttons
+	obj.answer_button = Button:new("Answer", 0, 0, 0, 0)
+	obj.refuse_button = Button:new("Refuse", 0, 0, 0, 0)
 
 	-- FIXME
 	-- obj.text[1] = {}
@@ -103,12 +196,33 @@ function Caller:new()
 	return obj
 end
 
+-- Update the state of the caller
+function Caller:update(dt)
+	-- If the caller id is 0, we need to pick a new caller
+	if self.caller_id == 0 then
+		-- We got a new caller
+		if(math.random() <= self.caller_rate) then
+			-- Turn on the caller answer button
+
+		end
+	end
+end
+
+-- Create a new caller when the user presses answer
+function Caller:create()
+	-- Set up the new caller
+	self.caller_id = math.random(#self.callers)
+	self.caller_bar.value = self.callers[caller_id].patience
+	-- Set up the text
+	self:updateText(true, "caller")
+	self:updateText(true, "player")
+end
+
 -- Update the caller text
 function Caller:updateText(initial, who)
 	if who == "caller" then
 		if(initial == true) then
-			-- FIXME
-			self.caller_text = "Hi."
+			self.caller_text = self.callers[self.callerid].intro
 		else
 			-- Find out how many words to render
 			local words = math.random(5,7)
@@ -117,7 +231,7 @@ function Caller:updateText(initial, who)
 	else
 		if(initial == true) then
 			-- FIXME
-			self.player_text = "Hi."
+			self.player_text = "Thank you for calling the Technoob line, how can I help you?"
 		else
 			-- Find out how many words to render
 			local words = math.random(5,7)
@@ -129,42 +243,40 @@ end
 -- Generate a new bit of conversation
 function Caller:getConversation(words, response)
 	local r = math.random(#self.pauses)
-	self.last_conversation[1] = r
 	local c = self.pauses[r]
 	local blah_rate = 0.75
+	local last_conversation = { r, 0 }
 	
 	for i = 1,words do
 		-- More blahs
 		if math.random() < blah_rate then
 			r = math.random(#self.pauses)
-			while (r == self.last_conversation[1]) do
+			while (r == last_conversation[1]) do
 				r = math.random(#self.pauses)
 			end
 			c = c .. " " .. self.pauses[r]
-			self.last_conversation[1] = r
+			last_conversation[1] = r
 		-- Pick a random conversation part
 		else
 			if (response == true) then
 				r = math.random(#self.responses)
-				while (r == self.last_conversation[2]) do
+				while (r == last_conversation[2]) do
 					r = math.random(#self.responses)
 				end
 
 				c = c .. " " .. self.responses[r]
-				self.last_conversation[2] = r
+				last_conversation[2] = r
 			else
 				r = math.random(#self.pieces)
-				while (r == self.last_conversation[2]) do
+				while (r == last_conversation[2]) do
 					r = math.random(#self.pieces)
 				end
 
 				c = c .. " " .. self.pieces[r]
-				self.last_conversation[2] = r
+				last_conversation[2] = r
 			end
 		end
 	end
-	-- Reset the conversation
-	self.last_conversation = { 0, 0 }
 
 	-- Upper case the first letter and add punctuation
 	r = math.random()
@@ -197,6 +309,8 @@ function Caller:draw()
 		lg.rectangle('fill', box_x + caller_box_border/2, box_y + caller_box_border/2, caller_box_width - caller_box_border, caller_box_height - caller_box_border)
 		-- Draw the character
 		lg.draw(self.images[self.caller_id], box_x + caller_box_border/2, box_y + caller_box_border/2)
+		-- Draw the patience bar
+		
 
 		-------------------------
 		-- Draw the speech bubble

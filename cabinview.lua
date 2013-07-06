@@ -59,17 +59,13 @@ function CabinView:update(dt)
 	if self.phone_state == "Talking" and self.s.state == "Walking" then
 		local left_side = ((self.wpr - self.wpl) / 3) - self.s.width 
 		local right_side = (2*(self.wpr - self.wpl) / 3)
-		print(self.s.x, left_side, right_side)
 		if self.s.x > left_side and self.s.x < right_side and self.s.direction == "right" then
 			self.phone_state = "Caught"
-			print ("Caught")
 		end
 		left_side = ((self.wpr - self.wpl) / 3) + self.s.width
 		right_side = (2*(self.wpr - self.wpl) / 3) + self.s.width 
-		print(self.s.x, left_side, right_side)
 		if self.s.x > left_side and self.s.x < right_side and self.s.direction == "left" then
 			self.phone_state = "Caught"
-			print ("Caught")
 		end
 	end
 end
@@ -93,6 +89,16 @@ end
 -- We always draw the cabin view at the bottom of the right panel, possibly add rotation here
 function CabinView:draw()
 	win_x, win_y, win_width, win_height = lg.getScissor()
+
+
+	-- Save the current coordinate system
+	lg.push()
+
+	-- Rotate based on the plane rotation
+	lg.translate(win_x + win_width/2, win_y + win_height/2)
+	lg.rotate(math.rad(p.angle))
+	lg.translate(-(win_x + win_width/2), -(win_y + win_height/2))
+
 	lg.setColor(255,255,255,255)
 	-- Draw the cabin
 	lg.draw(self.cabin, win_x, win_y)
@@ -113,6 +119,9 @@ function CabinView:draw()
 	
 	-- Draw the stewardess
 	self.s:draw()
+
+	-- Restore the coordinates
+	lg.pop()
 	
 	-- Draw the button for hiding/using the phone
 	self.button_talk:draw()
@@ -120,9 +129,9 @@ function CabinView:draw()
 
 	-- DEBUG
 	-- Draw the lines that indicate the thirds
-	lg.setColor(255,0,0,255)
-	lg.line(win_x + win_width / 3, win_y, win_x + win_width / 3, win_y + win_height)	
-	lg.line(win_x + 2*win_width / 3, win_y, win_x + 2*win_width / 3, win_y + win_height)	
+	-- lg.setColor(255,0,0,255)
+	-- lg.line(win_x + win_width / 3, win_y, win_x + win_width / 3, win_y + win_height)	
+	-- lg.line(win_x + 2*win_width / 3, win_y, win_x + 2*win_width / 3, win_y + win_height)	
 
 end
 

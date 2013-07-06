@@ -26,8 +26,9 @@ local UI_button_spacer = 40
 local UI_player_window_width = (window_width / 2) - (UI_divider_width/2)
 local UI_player_window_height = window_height - UI_bar_height
 local UI_right_panel_x = UI_player_window_width + UI_divider_width
+local caller_rate = 0.003
 
-draw_ct = 0
+local draw_ct = 0
 
 -- Load the game data on program start
 function love.load()
@@ -46,7 +47,7 @@ function love.load()
 	cv = CabinView:new(UI_right_panel_x, window_width, window_height)
 
 	-- Load the callers
-	c = Caller:new()
+	c = Caller:new(caller_rate)
 end
 
 -- Keypress callbacks that aren't handled in the main update loop
