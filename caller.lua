@@ -174,6 +174,8 @@ function Caller:new(window, caller_rate)
 
 	-- Configure the user's patience bar
 	obj.caller_bar = Bar:new()
+	obj.caller_bar.color = { 200, 40, 0, 255 }
+	obj.caller_bar.bg_color = { 40, 255, 0, 255 }
 
 	obj = setmetatable(obj, Caller)
 	return obj
@@ -343,7 +345,9 @@ function Caller:draw()
 		lg.draw(self.caller_images[self.caller_id], box_x + caller_box_border/2, box_y + caller_box_border/2)
 		-- Draw the patience bar
 		if self.answer_button.visible == false then
-			self.caller_bar:draw(box_x, box_y + caller_box_height, caller_box_width, 10)
+			self.caller_bar:draw(box_x, box_y + caller_box_height - 10, caller_box_width, 20)
+			lg.setColor(0,0,0,255)
+			lg.printf(self.caller_bar.value .. "/" .. self.caller_bar.full .. " Patience", box_x, box_y + caller_box_height - 10, caller_box_width, 'center')
 		end
 		-- Draw the answer/refuse buttons if needed
 		self.answer_button:draw()
@@ -415,18 +419,44 @@ function Caller:draw()
 		end
 
 		---------------------
-		-- Battle Menus
+		-- Battle Menu
 		---------------------
---		for button_id, button in ipairs(buttons) do
+--		for button_id, button in ipairs(self.insult_buttons) do
 --			button:draw()
 --		end
-	
+--
+--		-- Display the current brain points and bar
+--		self.brain_bar:draw()
 
 	------------------------------------------------
-	-- Upgrades, insult selection, answer call, etc.
+	-- Upgrades, insult selection, etc.
 	------------------------------------------------
 	else
-
+		-- For each insult type, display three things:
+		-- for
+		--	-- Checkbox (Enables the insult in your collection)
+		--	self.checks[i]:draw()
+		--	-- Insult name
+		--	lg.printf()
+		--	-- Upgrade button
+		--	self.upgrade_button[i]:draw()
+		-- end
+		
+		-- Up/Down scrollers
+		-- self.up_button:draw()
+		-- self.down_button:draw()
+		
+		----------------
+		-- Current stats
+		----------------
+		-- Current Level and XP
+		-- lg.printf()
+		-- Intellegence
+		-- lg.printf()	
+		-- Mental Dexterity
+		-- lg.printf()
+		-- Imagination
+		-- lg.printf()
 	end
 	
 end
