@@ -36,7 +36,7 @@ function Bar:draw(x, y, width, height)
 
 	-- Draw the filled part
 	lg.setColor(self.fgColor[1], self.fgColor[2], self.fgColor[3], self.fgColor[4])
-	lg.rectangle('fill', x, y, width * (value/full), height)
+	lg.rectangle('fill', x, y, width * (tonumber(self.value)/tonumber(self.full)), height)
 	lg.rectangle('line', x, y, width, height)
 end
 

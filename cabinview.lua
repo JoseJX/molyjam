@@ -90,7 +90,6 @@ end
 function CabinView:draw()
 	win_x, win_y, win_width, win_height = lg.getScissor()
 
-
 	-- Save the current coordinate system
 	lg.push()
 

@@ -26,28 +26,30 @@ local UI_button_spacer = 40
 local UI_player_window_width = (window_width / 2) - (UI_divider_width/2)
 local UI_player_window_height = window_height - UI_bar_height
 local UI_right_panel_x = UI_player_window_width + UI_divider_width
-local caller_rate = 0.003
+local caller_rate = 0.01
 
 local draw_ct = 0
 
 -- Load the game data on program start
 function love.load()
-	-- Generate terrain
+	-- Load the ground view
 	g = Ground:new()
 
+	-- Generate terrain
 	local max_ground_height = 200
 	local start_height = max_ground_height / 2
 	local delta = 5
 	g:generate(height, length, max_ground_height, 0.03, 0.005)
 
-	-- Load the plane sprite
+	-- Load the plane view
 	p = Plane:new(0, max_ground_height + 100, 100, height)
 
 	-- Load the cabin view
 	cv = CabinView:new(UI_right_panel_x, window_width, window_height)
 
-	-- Load the callers
-	c = Caller:new(caller_rate)
+	-- Load the caller window
+	local c_window = {UI_player_window_width + UI_divider_width, UI_bar_height, UI_player_window_width, UI_player_window_height - cv.cabin:getHeight()}
+	c = Caller:new(c_window, caller_rate)
 end
 
 -- Keypress callbacks that aren't handled in the main update loop
@@ -56,21 +58,19 @@ function love.keypressed(key, unicode)
 	if key == "escape" then
 		love.event.push('quit')
 	end
-
-	-- DEBUG KEYS
-	-- Update text message
-	if key == "t" then
-		c:updateText(false, "player")
-		c:updateText(false, "caller")
-	end
 end
 
 -- Mouse press callbacks
 function love.mousepressed(x, y, button)
+	-- Check the phone state
 	c.phone_state = cv:mousepressed(x, y, true)
+	-- Check the caller accept buttons
+	c:check(x,y,button)
 end
 function love.mousereleased(x, y, button)
+	-- Release
 	cv:mousepressed(x, y, false)
+	c:check(x,y, false)
 end
 
 -- Main update loop
@@ -131,6 +131,9 @@ function love.update(dt)
 
 	-- Update the cabin view
 	cv:update(dt)
+
+	-- Update the caller state
+	c:update(dt)
 end
 
 -- Drawing function, all drawing must be done from here!
@@ -152,9 +155,6 @@ function love.draw()
 	cv:draw()
 
 	-- Caller Window
-	lg.setScissor(UI_player_window_width + UI_divider_width, UI_bar_height, UI_player_window_width, UI_player_window_height - cv.cabin:getHeight())
-	lg.setColor(128,128,128,255)
-	lg.rectangle('fill', window_width/2, 0, window_width/2, window_height)
 	c:draw()
 	
 	--------------

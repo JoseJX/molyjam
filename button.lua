@@ -3,6 +3,7 @@ local Button = {}
 Button.__index = Button
 local lg = love.graphics
 
+-- We need absolute x_pos and y_pos so we can check the button presses
 function Button:new(text, x_pos, y_pos, width, height)
 	local obj = { 
 		state = false,
@@ -28,7 +29,7 @@ end
 
 -- Check if this button was pressed
 function Button:check(x, y, state)
-	if (x >= self.x and x < self.x + self.width) and (y >= self.y and y < self.y + self.height) then
+	if self.visible == true and (x >= self.x and x < self.x + self.width) and (y >= self.y and y < self.y + self.height) then
 		self.state = state
 		return true
 	end
@@ -45,6 +46,10 @@ end
 -- NOTE that the x and y are relative to the main coordinate system
 -- FIXME make the text printing less brittle...
 function Button:draw()
+	if self.visible == false then
+		return
+	end
+
 	-- Draw the outer rim
 	lg.setColor(self.color)
 	lg.rectangle('fill', self.x, self.y, self.width, self.height)
