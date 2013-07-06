@@ -1,6 +1,6 @@
 RELEASE_NAME=test
 
-LUA_FILES=main.lua ground.lua plane.lua conf.lua cabinview.lua caller.lua button.lua stewardess.lua bar.lua utils.lua
+LUA_FILES=main.lua ground.lua plane.lua conf.lua cabinview.lua caller.lua button.lua stewardess.lua bar.lua utils.lua player2.lua
 GRAPHICS_FILES=graphics/*
 SCRIPT_FILES=scripts/*
 

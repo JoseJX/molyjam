@@ -1,20 +1,20 @@
 local Ground = require 'ground'
 local Plane = require 'plane'
-local CabinView = require 'cabinview'
-local Caller = require 'caller'
-local Stewardess = require 'stewardess'
+local CallerGame = require 'caller_game'
 local lg = love.graphics
 local lk = love.keyboard
 
--- Level settings
-length = 100000
-height = 2000
-
--- Game settings
+-- Engine settings
 window_width = lg.getWidth()
 window_height = lg.getHeight()
 
+-- Game settings
+local level_length = 100000
+local level_height = 2000
+local caller_rate = 0.005
+
 -- Graphics positioning constants
+-- FIXME
 local UI_bar_height = 20
 local UI_divider_width = 10
 local UI_score_oft_H = 20
@@ -26,12 +26,14 @@ local UI_button_spacer = 40
 local UI_player_window_width = (window_width / 2) - (UI_divider_width/2)
 local UI_player_window_height = window_height - UI_bar_height
 local UI_right_panel_x = UI_player_window_width + UI_divider_width
-local caller_rate = 0.005
 
 local draw_ct = 0
 
 -- Load the game data on program start
 function love.load()
+	-----------------
+	-- Player 1
+	-----------------
 	-- Load the ground view
 	g = Ground:new()
 
@@ -39,18 +41,19 @@ function love.load()
 	local max_ground_height = 200
 	local start_height = max_ground_height / 2
 	local delta = 5
-	g:generate(height, length, max_ground_height, 0.03, 0.005)
+	g:generate(level_height, level_length, max_ground_height, 0.03, 0.005)
 
 	-- Load the plane view
-	p = Plane:new(0, max_ground_height + 100, 100, height)
+	p = Plane:new(0, max_ground_height + 100, 100, level_height)
 
-	-- Load the cabin view
-	cv = CabinView:new(UI_right_panel_x, window_width, window_height)
-
-	-- Load the caller window
-	local c_window = {UI_player_window_width + UI_divider_width, UI_bar_height, UI_player_window_width, UI_player_window_height - cv.cabin:getHeight()}
-	c = Caller:new(c_window, caller_rate)
+	-----------------
+	-- Player 2
+	-----------------
+	-- Create the game instance for player 2
+	local p2_window = { UI_right_panel_x, UI_bar_height, UI_player_window_width, UI_player_window_height }
+	p2 = CallerGame:new(p2_window)
 end
+
 
 -- Keypress callbacks that aren't handled in the main update loop
 function love.keypressed(key, unicode)
@@ -63,14 +66,11 @@ end
 -- Mouse press callbacks
 function love.mousepressed(x, y, button)
 	-- Check the phone state
-	cv:mousepressed(x, y, true)
-	-- Check the caller accept buttons
-	c:check(x,y,button)
+	p2:mousepressed(x, y, true)
 end
 function love.mousereleased(x, y, button)
 	-- Release
-	cv:mousepressed(x, y, false)
-	c:check(x,y, false)
+	p2:mousepressed(x, y, false)
 end
 
 -- Main update loop
@@ -129,11 +129,8 @@ function love.update(dt)
 	-- Update the plane status
 	p:update(dt)
 
-	-- Update the cabin view
-	cv:update(dt)
-
-	-- Update the caller state
-	c:update(dt)
+	-- Update the player 2 view
+	p2:update(dt)
 end
 
 -- Drawing function, all drawing must be done from here!
@@ -150,12 +147,7 @@ function love.draw()
 	---------------------------
 	-- Draw the Player 2 screen
 	---------------------------
-	-- Cabin view
-	lg.setScissor(UI_player_window_width + UI_divider_width, window_height - cv.cabin:getHeight(),UI_player_window_width, cv.cabin:getHeight())
-	cv:draw()
-
-	-- Caller Window
-	c:draw()
+	p2:draw()
 	
 	--------------
 	-- Draw the UI

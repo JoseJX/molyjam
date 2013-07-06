@@ -17,8 +17,11 @@ local phone_states = {
 
 local UI_ht_button_height = 30
 
-function CabinView:new(wpl, wpr, y)
+function CabinView:new(cabin_window)
 	local obj = { 
+		-- Cabin window area
+		window = cabin_window,
+
 		-- Image data
 		cabin = nil,	
 		phone = nil,
@@ -33,10 +36,6 @@ function CabinView:new(wpl, wpr, y)
 		-- Buttons
 		button_hide = nil,
 		button_talk = nil,
-
-		-- Cabin width measurements
-		wpl = wpl,
-		wpr = wpr,
 
 		-- Blinking speed
 		blink_state = false,
@@ -53,11 +52,12 @@ function CabinView:new(wpl, wpr, y)
 	obj.phone = lg.newImage("graphics/phone.png")
 
 	-- Create the buttons
-	obj.button_hide = Button:new("Hide Phone", wpl, window_height - 1.5*UI_ht_button_height, obj.cabin:getWidth()/3, UI_ht_button_height, 'center')
-	obj.button_talk = Button:new("Use Phone", wpl + 2*obj.cabin:getWidth()/3, window_height - 1.5*UI_ht_button_height, obj.cabin:getWidth()/3, UI_ht_button_height, 'center')
+	local b_y = cabin_window[2] + cabin_window[4] - 1.5 * UI_ht_button_height
+	obj.button_hide = Button:new("Hide Phone", cabin_window[1], by, cabin_window[3]/3, UI_ht_button_height, 'center')
+	obj.button_talk = Button:new("Use Phone", cabin_window[1] + 2*cabin_window[3]/3, by, cabin_window[3]/3, UI_ht_button_height, 'center')
 
 	-- Create the stewardess
-	obj.s = Stewardess:new(wpl, wpr)
+	obj.s = Stewardess:new(cabin_window[1], cabin_window[1] + cabin_window[3])
 
 	return setmetatable(obj, CabinView)
 end
@@ -151,7 +151,6 @@ function CabinView:draw()
 	-- Draw the button for hiding/using the phone
 	self.button_talk:draw()
 	self.button_hide:draw()
-
 end
 
 return CabinView
