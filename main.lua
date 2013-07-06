@@ -26,7 +26,7 @@ local UI_button_spacer = 40
 local UI_player_window_width = (window_width / 2) - (UI_divider_width/2)
 local UI_player_window_height = window_height - UI_bar_height
 local UI_right_panel_x = UI_player_window_width + UI_divider_width
-local caller_rate = 0.01
+local caller_rate = 0.005
 
 local draw_ct = 0
 
@@ -63,7 +63,7 @@ end
 -- Mouse press callbacks
 function love.mousepressed(x, y, button)
 	-- Check the phone state
-	c.phone_state = cv:mousepressed(x, y, true)
+	cv:mousepressed(x, y, true)
 	-- Check the caller accept buttons
 	c:check(x,y,button)
 end

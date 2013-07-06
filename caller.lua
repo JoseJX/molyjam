@@ -41,8 +41,6 @@ function Caller:new(window, caller_rate)
 		-- Buttons for interacting with the user
 		battle_buttons = {},
 		inventory_buttons = {},
-		-- Phone state (talking or not)
-		phone_state = "Hiding",
 		-- Inventory
 		inventory = {},
 		items = {},
@@ -187,6 +185,7 @@ function Caller:update(dt)
 	if self.caller_id == 0 then
 		-- We got a new caller
 		if(math.random() <= self.caller_rate) then
+			print ("New caller")
 			-- Create the caller
 			self:create()
 			-- Turn on the caller answer button
@@ -195,7 +194,7 @@ function Caller:update(dt)
 		end
 	-- We have a live caller
 	else
-		if self.phone_state == "Talking" then
+		if cv.phone_state == "Talking" then
 			self.babble_dt = self.babble_dt + dt
 			if self.babble_dt > math.random(2, self.babble_rate) then
 				if self.babble_last == "player" then
@@ -207,8 +206,11 @@ function Caller:update(dt)
 				end
 				self.babble_dt = 0
 			end
-		elseif self.phone_state == "OnHold" then
+		elseif cv.phone_state == "OnHold" then
 			self:updateText("caller", "hold")
+		elseif cv.phone_state == "Caught" then
+			self.answer_button.visible = false
+			self.refuse_button.visible = false
 		end
 	end
 end
@@ -226,7 +228,7 @@ end
 -- Check the caller buttons
 function Caller:check(x, y, button) 
 	-- Check the answer button		
-	if self.phone_state == "Using" and self.answer_button:check(x, y, button) then
+	if cv.phone_state == "Using" and self.answer_button:check(x, y, button) then
 		-- We're in game mode!
 		if button == false then
 			self.answer_button.visible = false
@@ -235,7 +237,7 @@ function Caller:check(x, y, button)
 			-- Update the text
 			self:updateText("player", "intro")
 			self:updateText("caller", "intro")
-			self.phone_state = "Talking"
+			cv.phone_state = "Talking"
 			cv.phone_state = "Talking"
 		end
 	-- Lame, the player rejected the call
@@ -378,7 +380,7 @@ function Caller:draw()
 		----------------------------------------
 		-- Draw the speech bubble for the player
 		----------------------------------------
-		if self.phone_state == "Talking" then
+		if cv.phone_state == "Talking" then
 			speech_y = self.win_y + self.win_h - speech_h
 	
 			-- Temporarily adjust the scissor so we can draw the speech bubble

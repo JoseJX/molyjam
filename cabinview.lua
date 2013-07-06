@@ -41,7 +41,9 @@ function CabinView:new(wpl, wpr, y)
 		-- Blinking speed
 		blink_state = false,
 		blink_rate = 0.5,
-		blink_dt = 0
+		blink_dt = 0,
+		blink_ct = 0,
+		blink_count = 8,
 	}
 
 	-- Load the cabin sprite
@@ -62,9 +64,12 @@ end
 
 -- Update the cabin view
 function CabinView:update(dt)
+	print (self.phone_state)
 	if self.s:update(dt, self.phone_state) == true then
 		self.phone_state = "Caught"
 		c.phones_left = c.phones_left - 1
+		self.button_hide.enabled = false
+		self.button_talk.enabled = false
 	end
 
 	if self.phone_state == "Caught" then
@@ -72,6 +77,14 @@ function CabinView:update(dt)
 		if self.blink_dt > self.blink_rate then
 			self.blink_state = not self.blink_state
 			self.blink_dt = 0
+			self.blink_ct = self.blink_ct + 1
+			if self.blink_ct > self.blink_count then
+				self.blink_ct = 0
+				self.phone_state = "Hiding"
+				c.caller_id = 0
+				self.button_hide.enabled = true
+				self.button_talk.enabled = true
+			end
 		end
 	end
 end

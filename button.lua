@@ -15,6 +15,7 @@ function Button:new(text, x_pos, y_pos, width, height, align)
 		visible = true,
 		color = { 0, 0, 0, 255 },
 		bg_color = { 255,255,255,255 },
+		enabled = true,
 		align = align,
 	}
 
@@ -29,7 +30,7 @@ end
 
 -- Check if this button was pressed
 function Button:check(x, y, state)
-	if self.visible == true and (x >= self.x and x < self.x + self.width) and (y >= self.y and y < self.y + self.height) then
+	if self.visible == true and self.enabled == true and (x >= self.x and x < self.x + self.width) and (y >= self.y and y < self.y + self.height) then
 		self.state = state
 		return true
 	end
@@ -48,6 +49,17 @@ end
 function Button:draw()
 	if self.visible == false then
 		return
+	end
+
+	-- If we're disabled, grey out the button
+	if self.enabled == false then
+		self.color[4] = 128
+		self.bg_color[4] = 128
+		lg.setColor(80,80,80,255)
+		lg.rectangle('fill', self.x, self.y, self.width, self.height)
+	else
+		self.color[4] = 255
+		self.bg_color[4] = 255
 	end
 
 	-- Draw the outer rim
