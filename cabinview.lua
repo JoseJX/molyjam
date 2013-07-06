@@ -64,12 +64,13 @@ end
 
 -- Update the cabin view
 function CabinView:update(dt)
-	print (self.phone_state)
 	if self.s:update(dt, self.phone_state) == true then
 		self.phone_state = "Caught"
 		c.phones_left = c.phones_left - 1
 		self.button_hide.enabled = false
+		self.button_hide.state = false
 		self.button_talk.enabled = false
+		self.button_talk.state = false
 	end
 
 	if self.phone_state == "Caught" then

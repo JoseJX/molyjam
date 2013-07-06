@@ -185,7 +185,6 @@ function Caller:update(dt)
 	if self.caller_id == 0 then
 		-- We got a new caller
 		if(math.random() <= self.caller_rate) then
-			print ("New caller")
 			-- Create the caller
 			self:create()
 			-- Turn on the caller answer button
@@ -346,6 +345,9 @@ function Caller:draw()
 		if self.answer_button.visible == false then
 			self.caller_bar:draw(box_x, box_y + caller_box_height, caller_box_width, 10)
 		end
+		-- Draw the answer/refuse buttons if needed
+		self.answer_button:draw()
+		self.refuse_button:draw()
 
 		-------------------------
 		-- Draw the speech bubble
@@ -413,14 +415,12 @@ function Caller:draw()
 		end
 
 		---------------------
-		-- Battle Buttons
+		-- Battle Menus
 		---------------------
-		--for button_id, button in ipairs(buttons) do
-		--	button:draw()
-		--end
+--		for button_id, button in ipairs(buttons) do
+--			button:draw()
+--		end
 	
-		self.answer_button:draw()
-		self.refuse_button:draw()
 
 	------------------------------------------------
 	-- Upgrades, insult selection, answer call, etc.
