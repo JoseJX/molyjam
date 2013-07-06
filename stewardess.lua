@@ -34,7 +34,7 @@ function Stewardess:new(wpl, wpr)
 end
 
 -- Decide if we're starting a new stewardess walk-by
-function Stewardess:update(dt)
+function Stewardess:update(dt, phone_state)
 	-- See if we have a stewardess to move
 	if (self.state == "Waiting") then
 		if math.random() < self.instance_rate then
@@ -60,10 +60,23 @@ function Stewardess:update(dt)
 				self.direction = "right"
 			end
 		end
-
-		-- See if we need to react
-		-- FIXME
 	end
+	
+	
+	-- Check if the player is using the phone when the stewardess is there?
+	if (phone_state == "Talking" or phone_state == "Using") and self.state == "Walking" then
+		local left_side = ((self.walk_path_right - self.walk_path_left) / 3) - self.width 
+		local right_side = (2*(self.walk_path_right - self.walk_path_left) / 3)
+		if self.x > left_side and self.x < right_side and self.direction == "right" then
+			return true
+		end
+		left_side = ((self.walk_path_right - self.walk_path_left) / 3) + self.width
+		right_side = (2*(self.walk_path_right - self.walk_path_left) / 3) + self.width 
+		if self.x > left_side and self.x < right_side and self.direction == "left" then
+			return true
+		end
+	end
+	return false
 end
 
 -- Draw the stewardess image

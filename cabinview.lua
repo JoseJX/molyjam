@@ -9,7 +9,9 @@ local lg = love.graphics
 
 local phone_states = {
 	"Hiding",
+	"Using",
 	"Talking",
+	"OnHold",
 	"Caught"
 }
 
@@ -23,6 +25,7 @@ function CabinView:new(wpl, wpr, y)
 
 		-- State of the phone user
 		phone_state = "Hiding",
+		laste_state = "Hiding",
 
 		-- Stewardess
 		s = nil,
@@ -33,7 +36,12 @@ function CabinView:new(wpl, wpr, y)
 
 		-- Cabin width measurements
 		wpl = wpl,
-		wpr = wpr
+		wpr = wpr,
+
+		-- Blinking speed
+		blink_state = false,
+		blink_rate = 0.5,
+		blink_dt = 0
 	}
 
 	-- Load the cabin sprite
@@ -43,8 +51,8 @@ function CabinView:new(wpl, wpr, y)
 	obj.phone = lg.newImage("graphics/phone.png")
 
 	-- Create the buttons
-	obj.button_hide = Button:new("Hide Phone", wpl, window_height - 1.5*UI_ht_button_height, obj.cabin:getWidth()/3, UI_ht_button_height)
-	obj.button_talk = Button:new("Use Phone", wpl + 2*obj.cabin:getWidth()/3, window_height - 1.5*UI_ht_button_height, obj.cabin:getWidth()/3, UI_ht_button_height)
+	obj.button_hide = Button:new("Hide Phone", wpl, window_height - 1.5*UI_ht_button_height, obj.cabin:getWidth()/3, UI_ht_button_height, 'center')
+	obj.button_talk = Button:new("Use Phone", wpl + 2*obj.cabin:getWidth()/3, window_height - 1.5*UI_ht_button_height, obj.cabin:getWidth()/3, UI_ht_button_height, 'center')
 
 	-- Create the stewardess
 	obj.s = Stewardess:new(wpl, wpr)
@@ -54,18 +62,16 @@ end
 
 -- Update the cabin view
 function CabinView:update(dt)
-	self.s:update(dt)
-	-- Check if the player is using the phone when the stewardess is there?
-	if self.phone_state == "Talking" and self.s.state == "Walking" then
-		local left_side = ((self.wpr - self.wpl) / 3) - self.s.width 
-		local right_side = (2*(self.wpr - self.wpl) / 3)
-		if self.s.x > left_side and self.s.x < right_side and self.s.direction == "right" then
-			self.phone_state = "Caught"
-		end
-		left_side = ((self.wpr - self.wpl) / 3) + self.s.width
-		right_side = (2*(self.wpr - self.wpl) / 3) + self.s.width 
-		if self.s.x > left_side and self.s.x < right_side and self.s.direction == "left" then
-			self.phone_state = "Caught"
+	if self.s:update(dt, self.phone_state) == true then
+		self.phone_state = "Caught"
+		c.phones_left = c.phones_left - 1
+	end
+
+	if self.phone_state == "Caught" then
+		self.blink_dt = self.blink_dt + dt
+		if self.blink_dt > self.blink_rate then
+			self.blink_state = not self.blink_state
+			self.blink_dt = 0
 		end
 	end
 end
@@ -74,16 +80,23 @@ end
 function CabinView:mousepressed(x,y,button)
 	if self.button_hide.visible == true and self.button_hide:check(x, y, button) then
 		if self.button_hide.state == true then
-			self.phone_state = "Hiding"
+			if self.phone_state == "Talking" then
+				self.phone_state = "OnHold"
+			else
+				self.phone_state = "Hiding"
+			end
 		end
-		return "Hiding"
 	end
 	if self.button_talk.visible == true and self.button_talk:check(x, y, button) then
 		if self.button_talk.state == true then
-			self.phone_state = "Talking"
+			if self.phone_state == "OnHold" then
+				self.phone_state = "Talking"
+			else
+				self.phone_state = "Using"
+			end
 		end
-		return "Talking"
 	end
+	return self.phone_state
 end
 
 -- We always draw the cabin view at the bottom of the right panel, possibly add rotation here
@@ -103,15 +116,14 @@ function CabinView:draw()
 	lg.draw(self.cabin, win_x, win_y)
 
 	-- Draw the phone in the correct position
-	if self.phone_state == "Hiding" then
+	if self.phone_state == "Hiding" or self.phone_state == "OnHold" then
 		-- Draw the phone under the seat
 		lg.draw(self.phone, win_x + 300, win_y + 307)
 	else
 		-- Draw the phone in use
 		lg.draw(self.phone, win_x + 194, win_y + 94)
-		if self.phone_state == "Caught" then
+		if self.phone_state == "Caught" and self.blink_state == true then
 			lg.setColor(255,0,0,64)
---			lg.rectangle('fill', win_x + win_width/3, win_y, win_width/3, win_height)
 			lg.rectangle('fill', win_x, win_y, win_width, win_height)
 		end
 	end
@@ -125,12 +137,6 @@ function CabinView:draw()
 	-- Draw the button for hiding/using the phone
 	self.button_talk:draw()
 	self.button_hide:draw()
-
-	-- DEBUG
-	-- Draw the lines that indicate the thirds
-	-- lg.setColor(255,0,0,255)
-	-- lg.line(win_x + win_width / 3, win_y, win_x + win_width / 3, win_y + win_height)	
-	-- lg.line(win_x + 2*win_width / 3, win_y, win_x + 2*win_width / 3, win_y + win_height)	
 
 end
 

@@ -10,8 +10,9 @@ local lg = love.graphics
 local caller_box_border = 10
 local caller_box_width = 125 + caller_box_border
 local caller_box_height = 200 + caller_box_border
-local button_width = 75
+local button_width = 70
 local button_height = 30
+local babble_rate = 5
 
 function Caller:new(window, caller_rate)
 	local obj = { 
@@ -31,8 +32,6 @@ function Caller:new(window, caller_rate)
 		caller_text = "",
 		-- Current text the player is saying
 		player_text = "",	
-		-- Problem list
-		problems = {},	
 		-- Color text for fake conversations
 		pieces = {},
 		pauses = {},
@@ -56,6 +55,13 @@ function Caller:new(window, caller_rate)
 		-- Caller answer buttons, located over the portrait
 		answer_button = nil,
 		refuse_button = nil,
+		-- Time since last babble change
+		babble_dt = 0,
+		babble_last = 'player',
+		-- Time between babble changes, between 1 second and this value
+		babble_rate = babble_rate,
+		-- Phones remaining
+		phones_left = 5,
 	}
 
 	-- Load all of the caller data
@@ -79,6 +85,10 @@ function Caller:new(window, caller_rate)
 					c.win = string.sub(line, 5)
 				elseif string.sub(line, 1, 5) == "lost:" then
 					c.lost = string.sub(line, 6)
+				elseif string.sub(line, 1, 8) == "waiting:" then
+					c.waiting = string.sub(line, 9)
+				elseif string.sub(line, 1, 5) == "hold:" then
+					c.hold = string.sub(line, 6)
 				-- All other lines, based on the level of response
 				else
 					local level = tonumber(string.sub(line, 1, 1))
@@ -102,11 +112,6 @@ function Caller:new(window, caller_rate)
 		end
 	end
 
-	-- Load the problem list
-	for line in love.filesystem.lines('scripts/problems') do
-		table.insert(obj.problems, line) 
-	end
-
 	-- Load the babble
 	for line in love.filesystem.lines('scripts/conversation_pieces') do
 		table.insert(obj.pieces, line)
@@ -119,20 +124,6 @@ function Caller:new(window, caller_rate)
 	end
 
 	-- Load the insult data
-		-- Insults are organized like this:
-		-- insult[1] => {
-		-- 	"name" => Insult Name,
-		-- 	"level" => 1,
-		-- 	"damage" => 10,
-		-- 	"critical" => 1.5,
-		-- 	"cost" => 10,
-		-- 	"combo" => 3,
-		-- 	"rate" => 0.45,
-		-- 	"text" => {
-		-- 		...
-		-- 	}
-		-- }
-
 	files = love.filesystem.enumerate('insults')
 	for id,file in pairs(files) do
 		if string.sub(file, -string.len("insult")) == "insult" then
@@ -178,8 +169,8 @@ function Caller:new(window, caller_rate)
 	-- Configure the anser/refuse buttons
 	local box_x = obj.win_x + (obj.win_w - (caller_box_width + caller_box_border/2))
 	local box_y = obj.win_y + (obj.win_h - caller_box_height)/2
-	obj.answer_button = Button:new("Answer", box_x, box_y + caller_box_height, button_width, button_height)
-	obj.refuse_button = Button:new("Refuse", box_x + caller_box_width - button_width, box_y + caller_box_height, button_width, button_height)
+	obj.answer_button = Button:new("Answer", box_x, box_y + caller_box_height, button_width, button_height, 'center')
+	obj.refuse_button = Button:new("Refuse", box_x + caller_box_width - button_width, box_y + caller_box_height, button_width, button_height, 'center')
 	obj.answer_button.visible = false
 	obj.refuse_button.visible = false
 
@@ -196,12 +187,28 @@ function Caller:update(dt)
 	if self.caller_id == 0 then
 		-- We got a new caller
 		if(math.random() <= self.caller_rate) then
-			print ("New caller")
 			-- Create the caller
 			self:create()
 			-- Turn on the caller answer button
 			self.answer_button.visible = true
 			self.refuse_button.visible = true
+		end
+	-- We have a live caller
+	else
+		if self.phone_state == "Talking" then
+			self.babble_dt = self.babble_dt + dt
+			if self.babble_dt > math.random(2, self.babble_rate) then
+				if self.babble_last == "player" then
+					self:updateText("caller", "babble")	
+					self.babble_last = "caller"
+				else
+					self:updateText("player", "babble")	
+					self.babble_last = "player"
+				end
+				self.babble_dt = 0
+			end
+		elseif self.phone_state == "OnHold" then
+			self:updateText("caller", "hold")
 		end
 	end
 end
@@ -213,23 +220,26 @@ function Caller:create()
 	self.caller_bar.value = self.callers[self.caller_id].patience
 	self.caller_bar.full = self.callers[self.caller_id].patience
 	-- Set up the text
-	self:updateText(true, "caller")
-	self:updateText(true, "player")
+	self:updateText("caller", "waiting")
 end
 
 -- Check the caller buttons
 function Caller:check(x, y, button) 
 	-- Check the answer button		
-	if self.answer_button:check(x, y, button) and self.phone_state == "Talking" then
-		print("Answered")
+	if self.phone_state == "Using" and self.answer_button:check(x, y, button) then
 		-- We're in game mode!
 		if button == false then
 			self.answer_button.visible = false
 			self.refuse_button.visible = false
+			-- Set the mode to talking
+			-- Update the text
+			self:updateText("player", "intro")
+			self:updateText("caller", "intro")
+			self.phone_state = "Talking"
+			cv.phone_state = "Talking"
 		end
 	-- Lame, the player rejected the call
 	elseif self.refuse_button:check(x, y, button) then
-		print("Rejected")
 		self.caller_id = 0
 		if button == false then
 			self.answer_button.visible = false
@@ -239,23 +249,22 @@ function Caller:check(x, y, button)
 end
 
 -- Update the caller text
-function Caller:updateText(initial, who)
+function Caller:updateText(who, state)
 	if who == "caller" then
-		if(initial == true) then
-			self.caller_text = self.callers[self.caller_id].intro
-		else
+		if(state == "babble") then
 			-- Find out how many words to render
 			local words = math.random(5,7)
 			self.caller_text = self:getConversation(words, true)
+		else
+			self.caller_text = self.callers[self.caller_id][state]
 		end
 	else
-		if(initial == true) then
-			-- FIXME
-			self.player_text = "Thank you for calling the Technoob line, how can I help you?"
-		else
+		if(state == "babble") then
 			-- Find out how many words to render
 			local words = math.random(5,7)
 			self.player_text = self:getConversation(words, false)
+		else
+			self.player_text = "Thank you for calling the Technoob line, how can I help you?"
 		end
 	end
 end
@@ -332,7 +341,9 @@ function Caller:draw()
 		-- Draw the character
 		lg.draw(self.caller_images[self.caller_id], box_x + caller_box_border/2, box_y + caller_box_border/2)
 		-- Draw the patience bar
-		self.caller_bar:draw(box_x, box_y + caller_box_height, caller_box_width, 10)
+		if self.answer_button.visible == false then
+			self.caller_bar:draw(box_x, box_y + caller_box_height, caller_box_width, 10)
+		end
 
 		-------------------------
 		-- Draw the speech bubble
@@ -362,7 +373,7 @@ function Caller:draw()
 	
 		-- Draw the text
 		lg.setColor(0,0,0,255)
-		lg.print(self.caller_text, speech_x + caller_box_border/2, speech_y + caller_box_border/2)
+		lg.printf(self.caller_text, speech_x, speech_y + caller_box_border, speech_w, 'center')
 	
 		----------------------------------------
 		-- Draw the speech bubble for the player
@@ -396,7 +407,7 @@ function Caller:draw()
 	
 			-- Draw the text
 			lg.setColor(0,0,0,255)
-			lg.print(self.player_text, speech_x + caller_box_border/2, speech_y + caller_box_border/2)
+			lg.printf(self.player_text, speech_x, speech_y + caller_box_border, speech_w, 'center')
 		end
 
 		---------------------

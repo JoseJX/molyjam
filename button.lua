@@ -4,7 +4,7 @@ Button.__index = Button
 local lg = love.graphics
 
 -- We need absolute x_pos and y_pos so we can check the button presses
-function Button:new(text, x_pos, y_pos, width, height)
+function Button:new(text, x_pos, y_pos, width, height, align)
 	local obj = { 
 		state = false,
 		text = text or "",
@@ -15,7 +15,7 @@ function Button:new(text, x_pos, y_pos, width, height)
 		visible = true,
 		color = { 0, 0, 0, 255 },
 		bg_color = { 255,255,255,255 },
-
+		align = align,
 	}
 
 	-- Load all of the caller images
@@ -60,15 +60,14 @@ function Button:draw()
 		lg.rectangle('fill', self.x + 5, self.y + 5, self.width - 10, self.height - 10)
 		-- Draw the text
 		lg.setColor(self.bg_color)
-		lg.print(self.text, self.x + 10, self.y + 10)
+		lg.printf(self.text, self.x, self.y + 10, self.width, self.align)
 	else
 		-- Draw the inside
 		lg.setColor(self.bg_color)
 		lg.rectangle('fill', self.x + 5, self.y + 5, self.width - 10, self.height - 10)
-
 		-- Draw the text
 		lg.setColor(self.color)
-		lg.print(self.text, self.x + 10, self.y + 10)
+		lg.printf(self.text, self.x, self.y + 10, self.width, self.align)
 	end
 end
 
