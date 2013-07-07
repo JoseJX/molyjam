@@ -7,14 +7,6 @@ CabinView.__index = CabinView
 
 local lg = love.graphics
 
-local phone_states = {
-	"Hiding",
-	"Using",
-	"Talking",
-	"OnHold",
-	"Caught"
-}
-
 local UI_ht_button_height = 30
 
 function CabinView:new(cabin_window)
@@ -25,10 +17,6 @@ function CabinView:new(cabin_window)
 		-- Image data
 		cabin = nil,	
 		phone = nil,
-
-		-- State of the phone user
-		phone_state = "Hiding",
-		laste_state = "Hiding",
 
 		-- Stewardess
 		s = nil,
@@ -53,8 +41,8 @@ function CabinView:new(cabin_window)
 
 	-- Create the buttons
 	local b_y = cabin_window[2] + cabin_window[4] - 1.5 * UI_ht_button_height
-	obj.button_hide = Button:new("Hide Phone", cabin_window[1], by, cabin_window[3]/3, UI_ht_button_height, 'center')
-	obj.button_talk = Button:new("Use Phone", cabin_window[1] + 2*cabin_window[3]/3, by, cabin_window[3]/3, UI_ht_button_height, 'center')
+	obj.button_hide = Button:new("Hide Phone", cabin_window[1], b_y, cabin_window[3]/3, UI_ht_button_height, 'center')
+	obj.button_talk = Button:new("Use Phone", cabin_window[1] + 2*cabin_window[3]/3, b_y, cabin_window[3]/3, UI_ht_button_height, 'center')
 
 	-- Create the stewardess
 	obj.s = Stewardess:new(cabin_window[1], cabin_window[1] + cabin_window[3])
@@ -63,80 +51,89 @@ function CabinView:new(cabin_window)
 end
 
 -- Update the cabin view
-function CabinView:update(dt)
-	if self.s:update(dt, self.phone_state) == true then
-		self.phone_state = "Caught"
-		c.phones_left = c.phones_left - 1
+function CabinView:update(dt, call_state)
+	-- Check if the stewardess has caught the user
+	if self.s:update(dt, call_state) == true then
 		self.button_hide.enabled = false
 		self.button_hide.state = false
 		self.button_talk.enabled = false
 		self.button_talk.state = false
+		-- Totally...
+		return true
 	end
+	return false
+end
 
-	if self.phone_state == "Caught" then
-		self.blink_dt = self.blink_dt + dt
-		if self.blink_dt > self.blink_rate then
-			self.blink_state = not self.blink_state
-			self.blink_dt = 0
-			self.blink_ct = self.blink_ct + 1
-			if self.blink_ct > self.blink_count then
-				self.blink_ct = 0
-				self.phone_state = "Hiding"
-				c.caller_id = 0
-				self.button_hide.enabled = true
-				self.button_talk.enabled = true
-			end
+-- This function returns true when the blinking is done
+function CabinView:blink(dt)
+	self.blink_dt = self.blink_dt + dt
+	if self.blink_dt > self.blink_rate then
+		self.blink_state = not self.blink_state
+		self.blink_dt = 0
+		self.blink_ct = self.blink_ct + 1
+		if self.blink_ct > self.blink_count then
+			self.blink_ct = 0
+			self.button_hide.enabled = true
+			self.button_talk.enabled = true
+			return true
 		end
 	end
+	return false
 end
 
 -- We got a mouse press, check to see if we need to update anything
-function CabinView:mousepressed(x,y,button)
+function CabinView:mousepressed(x,y,button, call_state)
 	if self.button_hide.visible == true and self.button_hide:check(x, y, button) then
 		if self.button_hide.state == true then
-			if self.phone_state == "Talking" then
-				self.phone_state = "OnHold"
+			if call_state == "Talking" then
+				return "OnHold"
 			else
-				self.phone_state = "Hiding"
+				return "Hiding"
 			end
 		end
 	end
 	if self.button_talk.visible == true and self.button_talk:check(x, y, button) then
 		if self.button_talk.state == true then
-			if self.phone_state == "OnHold" then
-				self.phone_state = "Talking"
+			if call_state == "OnHold" then
+				return "Talking"
 			else
-				self.phone_state = "Using"
+				return "Using"
 			end
 		end
 	end
-	return self.phone_state
+	return nil
 end
 
 -- We always draw the cabin view at the bottom of the right panel, possibly add rotation here
-function CabinView:draw()
-	win_x, win_y, win_width, win_height = lg.getScissor()
+function CabinView:draw(call_state)
+	-- Set up the drawing coordinates
+	win_x = self.window[1]
+	win_y = self.window[2]
+	win_width = self.window[3]
+	win_height = self.window[4]
+	lg.setScissor(win_x, win_y, win_width, win_height)
 
 	-- Save the current coordinate system
 	lg.push()
 
-	-- Rotate based on the plane rotation
+	-- Rotate and scale based on the plane rotation
 	lg.translate(win_x + win_width/2, win_y + win_height/2)
 	lg.rotate(math.rad(p.angle))
 	lg.translate(-(win_x + win_width/2), -(win_y + win_height/2))
+	-- FIXME: Scale for non-720p resolutions	
 
 	lg.setColor(255,255,255,255)
 	-- Draw the cabin
 	lg.draw(self.cabin, win_x, win_y)
 
 	-- Draw the phone in the correct position
-	if self.phone_state == "Hiding" or self.phone_state == "OnHold" then
+	if call_state == "Hiding" or call_state == "OnHold" then
 		-- Draw the phone under the seat
 		lg.draw(self.phone, win_x + 300, win_y + 307)
 	else
 		-- Draw the phone in use
 		lg.draw(self.phone, win_x + 194, win_y + 94)
-		if self.phone_state == "Caught" and self.blink_state == true then
+		if call_state == "Caught" and self.blink_state == true then
 			lg.setColor(255,0,0,64)
 			lg.rectangle('fill', win_x, win_y, win_width, win_height)
 		end

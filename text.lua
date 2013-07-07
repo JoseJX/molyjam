@@ -12,7 +12,7 @@ function Text:new()
 		-- Current text to be rendered
 		caller_text = "",
 		player_text = "",
-
+		
 		-- Text generator data
 		pieces = {},
 		pauses = {},
@@ -150,6 +150,15 @@ function Text:getConversation(words, response)
 	return c
 end
 
+-- Draw the text specified
+function Text:draw(who, x, y, width)
+	-- Draw the text
+	lg.setColor(0,0,0,255)
+	if who == "caller" then
+		lg.printf(self.caller_text, x, y, width, 'center')
+	else
+		lg.printf(self.player_text, x, y, width, 'center')
+	end
+end
+
 return Text
-
-
