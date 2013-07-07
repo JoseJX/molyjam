@@ -1,4 +1,5 @@
 -- Draw the ground/terrain/clouds
+local Obstruction = require 'obstruction'
 local Ground = {}
 Ground.__index = Ground
 
@@ -26,7 +27,7 @@ function height_compare(a,b)
 	return a["height"] > b["height"]
 end
 
--- Generate the hills
+-- Generate the terrain, clouds and obstructions
 -- FIXME: Add the airport at the beginning and end
 function Ground:generate(height, length, max_hill_height, hill_density, cloud_density)
 	-- Generate the hills
@@ -50,6 +51,11 @@ function Ground:generate(height, length, max_hill_height, hill_density, cloud_de
 
 	-- Generate a sorted list of IDs for drawing
 	table.sort(self.ground, height_compare)
+end
+
+-- Update the ground terrain
+function Ground:update(dt)
+
 end
 
 -- Draw the terrain, relative to the plane position

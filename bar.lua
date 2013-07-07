@@ -19,13 +19,11 @@ function Bar:new()
 end
 
 -- Update the value
-function Bar:value(x, increment)
-	increment = increment or false
-	if increment == true then
-		self.value = self.value + x
-	else
-		self.value = x	
-	end
+function Bar:updateValue(x)
+	self.value = self.value + x
+end
+function Bar:setValue(x)
+	self.value = x
 end
 
 -- Draw the bar

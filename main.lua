@@ -140,9 +140,9 @@ function love.draw()
 	---------------------------
 	lg.setScissor(0, UI_bar_height, UI_player_window_width, UI_player_window_height)
 	-- Ground
-	g:draw(p["x"], p["y"])
+	-- g:draw(p["x"], p["y"])
 	-- Plane
-	p:draw(height, level)
+	-- p:draw(height, level)
 	
 	---------------------------
 	-- Draw the Player 2 screen
@@ -167,16 +167,16 @@ function love.draw()
 	lg.print("Player 2 Score: ", window_width/2 + UI_score_oft_H + UI_divider_width, UI_score_oft_V)	
 
 	--DEBUG stuff
-	lg.print(p["angle"], window_width*.1, UI_score_oft_V)
-	lg.print(math.floor(p["x"]), window_width*.2, UI_score_oft_V)
-	lg.print(math.floor(p["y"]), window_width*.3, UI_score_oft_V)
-	lg.print(p["entropy"], window_width*.4, UI_score_oft_V)
+	-- lg.print(p["angle"], window_width*.1, UI_score_oft_V)
+	-- lg.print(math.floor(p["x"]), window_width*.2, UI_score_oft_V)
+	-- lg.print(math.floor(p["y"]), window_width*.3, UI_score_oft_V)
+	-- lg.print(p["entropy"], window_width*.4, UI_score_oft_V)
 
-	if draw_ct > 5 then
-		lg.setColor(0,0,255,255)
-		lg.circle('fill', UI_player_window_width/2, UI_player_window_height / 2 + UI_bar_height, 3)
-		draw_ct = 0
-	end
-	draw_ct = draw_ct + 1
+	-- if draw_ct > 5 then
+	--	lg.setColor(0,0,255,255)
+	--	lg.circle('fill', UI_player_window_width/2, UI_player_window_height / 2 + UI_bar_height, 3)
+	--	draw_ct = 0
+	--end
+	--draw_ct = draw_ct + 1
 end
 

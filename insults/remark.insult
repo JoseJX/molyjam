@@ -1,4 +1,7 @@
-name: Offhanded Remarks
+min_level: 1
+-----
+name: Offhanded Remark
+description: Slightly under your breath, at least it makes you feel better.
 level: 1
 damage: 10
 critical: 1.5
@@ -6,7 +9,8 @@ cost: 10
 combo: 3
 rate: 0.45
 -----
-name: Insulting Remarks
+name: Insulting Remark
+description: A little bit more forceful and biting.
 level: 2
 damage: 15
 critical: 1.5
@@ -14,7 +18,8 @@ cost: 15
 combo: 3
 rate: 0.50
 -----
-name: Soul Crushing Remarks
+name: Soul Crushing Remark
+description: Don't try this at home. Your siblings will cry.
 level: 3
 damage: 20
 critical: 2

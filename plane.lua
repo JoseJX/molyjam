@@ -114,8 +114,8 @@ function Plane:draw()
 	lg.draw(self.image, plane_x - self.com_x, plane_y - self.com_y)
 
 	-- DEBUG - draw a dot at the plane's rotation point position
-	lg.setColor(255,0,0,255)
-	lg.circle('fill', plane_x, plane_y, 3)
+	-- lg.setColor(255,0,0,255)
+	-- lg.circle('fill', plane_x, plane_y, 3)
 
 	-- Restore the coordinate system
 	lg.pop()

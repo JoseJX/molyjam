@@ -68,7 +68,7 @@ function CallerGame:new(window)
 	-- Instance the caller, player, text generator and cabin view
 	obj.caller_window = { obj.win_x, obj.win_y, obj.win_w, obj.win_h - cabin_view_height }
 	obj.caller = Caller:new(obj.caller_window)
-	obj.player = Player2:new()
+	obj.player = Player2:new(obj.caller_window)
 	local c_text = { 0, 0, 0 }
 	local p_text = { 0, 0, 0 }
 	obj.text = Text:new(c_text, p_text)
@@ -140,6 +140,9 @@ end
 
 -- Check the buttons for user input
 function CallerGame:mousepressed(x, y, button) 
+	-- Update the player dialogs
+	self.player:check(x, y, button, self.call_state)
+
 	-- Check the cabin view for use/hide phone
 	local new_state = self.cabin:mousepressed(x, y, button, self.call_state)
 	if not (new_state == nil) then

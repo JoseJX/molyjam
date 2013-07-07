@@ -1,4 +1,7 @@
+min_level: 10
+-----
 name: Trite Observation
+description: An insulting observation, but it doesn't cut very deep.
 level: 1
 damage: 30
 critical: 2
@@ -7,6 +10,7 @@ combo: 1
 rate: 0.50
 -----
 name: Personal Observation
+description: A more personal touch to an insulting observation.
 level: 2
 damage: 40
 critical: 3
@@ -15,6 +19,7 @@ combo: 1
 rate: 0.55
 -----
 name: Blunt Observation
+description: The most direct insulting observation available.
 level: 3
 damage: 50
 critical: 5
