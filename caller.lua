@@ -25,6 +25,7 @@ function Caller:new(window, caller_rate)
 		caller_id = 0,
 		-- Caller image data
 		caller_images = {},
+		no_caller = nil,
 		-- Caller script data
 		callers = {},
 		-- Has the call been answered yet?
@@ -82,6 +83,9 @@ function Caller:new(window, caller_rate)
 		end
 	end
 
+	-- Load the "no caller" image
+	obj.no_caller = lg.newImage("graphics/no_caller.png")
+
 	-- Configure the user's patience bar
 	obj.caller_bar = Bar:new()
 	obj.caller_bar.color = { 200, 40, 0, 255 }
@@ -122,42 +126,47 @@ end
 
 -- Draw the caller image
 function Caller:draw(call_state, text)
+	lg.setScissor(self.win_x, self.win_y, self.win_w, self.win_h)
+
+	local box_x = self.win_x + (self.win_w - (caller_box_width + caller_box_border/2))
+	local box_y = self.win_y + (self.win_h - caller_box_height)/2
+
+	--------------------
+	-- Draw the portrait
+	--------------------
+	-- Draw the bounding box
+	lg.setColor(255,128,0,255)
+	lg.rectangle('fill', box_x, box_y, caller_box_width, caller_box_height)
+	lg.setColor(255,255,255,255)
+	lg.rectangle('fill', box_x + caller_box_border/2, box_y + caller_box_border/2, caller_box_width - caller_box_border, caller_box_height - caller_box_border)
+	-- Draw the character
 	if self.caller_id > 0 then
-		lg.setScissor(self.win_x, self.win_y, self.win_w, self.win_h)
-
-		local box_x = self.win_x + (self.win_w - (caller_box_width + caller_box_border/2))
-		local box_y = self.win_y + (self.win_h - caller_box_height)/2
-
-		--------------------
-		-- Draw the portrait
-		--------------------
-		-- Draw the bounding box
-		lg.setColor(255,128,0,255)
-		lg.rectangle('fill', box_x, box_y, caller_box_width, caller_box_height)
-		lg.setColor(255,255,255,255)
-		lg.rectangle('fill', box_x + caller_box_border/2, box_y + caller_box_border/2, caller_box_width - caller_box_border, caller_box_height - caller_box_border)
-		-- Draw the character
 		lg.draw(self.caller_images[self.caller_id], box_x + caller_box_border/2, box_y + caller_box_border/2)
-		-- Draw the patience bar
-		if call_state == "OnHold" or call_state == "Talking" then
-			self.caller_bar:draw(box_x, box_y + caller_box_height - 10, caller_box_width, 20)
-			lg.setColor(0,0,0,255)
-			lg.printf(self.caller_bar.value .. "/" .. self.caller_bar.full .. " Patience", box_x, box_y + caller_box_height - 10, caller_box_width, 'center')
-		end
+	else
+		lg.draw(self.no_caller, box_x + caller_box_border/2, box_y + caller_box_border/2)
+	end
 
-		-------------------------
-		-- Draw the speech bubble
-		-------------------------
-		local speech_x = self.win_x + caller_box_border/2
-		local speech_y = self.win_y + caller_box_border/2
-		local speech_w = self.win_w - caller_box_border
-		local speech_h = 30
-	
-		lg.setColor(255,255,255,255)
-		lg.rectangle('fill', speech_x, speech_y, speech_w, speech_h)
+	-- Draw the patience bar
+	if call_state == "OnHold" or call_state == "Talking" then
+		self.caller_bar:draw(box_x, box_y + caller_box_height - 10, caller_box_width, 20)
 		lg.setColor(0,0,0,255)
-		lg.rectangle('line', speech_x, speech_y, speech_w, speech_h)
+		lg.printf(self.caller_bar.value .. "/" .. self.caller_bar.full .. " Patience", box_x, box_y + caller_box_height - 10, caller_box_width, 'center')
+	end
+
+	-------------------------
+	-- Draw the speech bubble
+	-------------------------
+	local speech_x = self.win_x + caller_box_border/2
+	local speech_y = self.win_y + caller_box_border/2
+	local speech_w = self.win_w - caller_box_border
+	local speech_h = 30
 	
+	lg.setColor(255,255,255,255)
+	lg.rectangle('fill', speech_x, speech_y, speech_w, speech_h)
+	lg.setColor(0,0,0,255)
+	lg.rectangle('line', speech_x, speech_y, speech_w, speech_h)
+	
+	if self.caller_id > 0 then
 		-- Draw the bubble spike
 		local bs_x1 = box_x + caller_box_width/2 + caller_box_border/2
 		local bs_y1 = speech_y + speech_h - 3
@@ -173,44 +182,46 @@ function Caller:draw(call_state, text)
 	
 		-- Draw the text
 		text:draw("caller", speech_x, speech_y + 0.25 * speech_h, speech_w)
+	else
+		lg.printf("Waiting for call...", speech_x, speech_y + 0.25 * speech_h, speech_w, 'center')
+	end
 	
-		----------------------------------------
-		-- Draw the speech bubble for the player
-		-- Done here because it's easier...
-		----------------------------------------
-		if call_state == "Talking" then
-			local speech_x = self.win_x + caller_box_border/2
-			local speech_y = self.win_y + self.win_h - speech_h
-			local speech_w = self.win_w - caller_box_border
-			local speech_h = 30
+	----------------------------------------
+	-- Draw the speech bubble for the player
+	-- Done here because it's easier...
+	----------------------------------------
+	if call_state == "Talking" then
+		local speech_x = self.win_x + caller_box_border/2
+		local speech_y = self.win_y + self.win_h - speech_h
+		local speech_w = self.win_w - caller_box_border
+		local speech_h = 30
 
-			-- Temporarily adjust the scissor so we can draw the speech bubble
-			lg.setScissor(self.win_x, self.win_y, self.win_w, window_height - self.win_y)
+		-- Temporarily adjust the scissor so we can draw the speech bubble
+		lg.setScissor(self.win_x, self.win_y, self.win_w, window_height - self.win_y)
 
-			lg.setColor(255,255,255,255)
-			lg.rectangle('fill', speech_x, speech_y, speech_w, speech_h)
-			lg.setColor(0,0,0,255)
-			lg.rectangle('line', speech_x, speech_y, speech_w, speech_h)
+		lg.setColor(255,255,255,255)
+		lg.rectangle('fill', speech_x, speech_y, speech_w, speech_h)
+		lg.setColor(0,0,0,255)
+		lg.rectangle('line', speech_x, speech_y, speech_w, speech_h)
 
-			-- Draw the spike
-			bs_x1 = speech_x + speech_w/2 - caller_box_border/2
-			bs_y1 = speech_y + speech_h - 3
-			bs_x2 = bs_x1 + caller_box_border
-			bs_y2 = bs_y1
-			bs_x3 = bs_x1 + caller_box_border/2
-			bs_y3 = bs_y1 + (window_height - win_height) / 4
-			lg.setColor(255,255,255,255)
-			lg.polygon('fill', bs_x1, bs_y1, bs_x2, bs_y2, bs_x3, bs_y3)
-			lg.setColor(0,0,0,255)
-			lg.line(bs_x1, bs_y1, bs_x3, bs_y3)
-			lg.line(bs_x2, bs_y2, bs_x3, bs_y3)
-	
-			-- Draw the text
-			text:draw("player", speech_x, speech_y + 0.25 * speech_h, speech_w)
-			
-			-- Reset the scissor
-			lg.setScissor(self.win_x, self.win_y, self.win_w, self.win_h)
-		end
+		-- Draw the spike
+		bs_x1 = speech_x + speech_w/2 - caller_box_border/2
+		bs_y1 = speech_y + speech_h - 3
+		bs_x2 = bs_x1 + caller_box_border
+		bs_y2 = bs_y1
+		bs_x3 = bs_x1 + caller_box_border/2
+		bs_y3 = bs_y1 + (window_height - win_height) / 4
+		lg.setColor(255,255,255,255)
+		lg.polygon('fill', bs_x1, bs_y1, bs_x2, bs_y2, bs_x3, bs_y3)
+		lg.setColor(0,0,0,255)
+		lg.line(bs_x1, bs_y1, bs_x3, bs_y3)
+		lg.line(bs_x2, bs_y2, bs_x3, bs_y3)
+
+		-- Draw the text
+		text:draw("player", speech_x, speech_y + 0.25 * speech_h, speech_w)
+		
+		-- Reset the scissor
+		lg.setScissor(self.win_x, self.win_y, self.win_w, self.win_h)
 	end
 end
 

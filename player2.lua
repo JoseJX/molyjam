@@ -1,6 +1,7 @@
 -- Player data
 local lg = love.graphics
 local Store = require 'store'
+local Bar = require 'bar'
 
 local Player = {}
 Player.__index = Player
@@ -33,7 +34,7 @@ function Player:new(window)
 		store = {},
 
 		-- Buttons for the player UI
-
+		level_bar = nil,
 	}
 	-- Create some random stats
 	obj.int = math.random(1,10)

@@ -22,6 +22,7 @@ end
 function Bar:updateValue(x)
 	self.value = self.value + x
 end
+
 function Bar:setValue(x)
 	self.value = x
 end

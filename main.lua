@@ -140,9 +140,9 @@ function love.draw()
 	---------------------------
 	lg.setScissor(0, UI_bar_height, UI_player_window_width, UI_player_window_height)
 	-- Ground
-	-- g:draw(p["x"], p["y"])
+	g:draw(p["x"], p["y"])
 	-- Plane
-	-- p:draw(height, level)
+	p:draw(height, level)
 	
 	---------------------------
 	-- Draw the Player 2 screen
