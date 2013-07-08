@@ -80,6 +80,7 @@ function Player:update(dt, call_state)
 		end
 
 		for i = 1,3 do
+			self.insult_buttons[i].enabled = true
 			if not (self.inventory[i] == nil) then
 				self.insult_buttons[i].fill_amt = self.insult_buttons[i].fill_amt + (dt * self.im) / (self.inventory[i].upgrades[self.inventory[i].current_level].cost)
 				if self.insult_buttons[i].fill_amt > 1 then
@@ -88,7 +89,14 @@ function Player:update(dt, call_state)
 			end
 		end
 	elseif call_state == "OnHold" then
+		for i = 1,3 do
+			self.insult_buttons[i].enabled = false
+		end
 		self.bp = self.bp - (dt * self.im)/2
+	elseif call_state == "Missed" or call_state == "Insulted" then
+		for i = 1,3 do
+			self.insult_buttons[i].enabled = false
+		end
 	elseif call_state == "Hiding" then
 		self.bp = 0
 	end
@@ -148,6 +156,10 @@ end
 
 -- Check buttons
 function Player:check(x, y, button, call_state)
+	if button == true then
+		return 0
+	end
+
 	-- Store state
 	if call_state == "Hiding" then
 		self.store:check(x, y, button)
@@ -174,7 +186,6 @@ function Player:check(x, y, button, call_state)
 			if self.insult_buttons[id]:check(x, y, button) == true then
 				-- Check if the insult is castable with the current state	
 				if self:check_insult(id) == true then
-					print ("Resetting")
 					self.insult_buttons[id].fill_amt = 0
 					return id
 				end
