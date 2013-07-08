@@ -48,7 +48,6 @@ end
 
 -- Draw the button
 -- NOTE that the x and y are relative to the main coordinate system
--- FIXME make the text printing less brittle...
 function Button:draw()
 	if self.visible == false then
 		return

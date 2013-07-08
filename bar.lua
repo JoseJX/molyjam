@@ -3,6 +3,7 @@ local Bar = {}
 Bar.__index = Bar
 
 local lg = love.graphics
+local UI_edge_width = 10
 
 function Bar:new()
 	local obj = { 
@@ -13,7 +14,7 @@ function Bar:new()
 		-- Foreground color
 		fgColor = { 0, 0, 255, 255 },
 		-- Background color
-		bgColor = { 80, 80, 80, 255 },
+		bgColor = { 255, 255, 255, 255 },
 	}
 	return setmetatable(obj, Bar)
 end
@@ -30,13 +31,12 @@ end
 -- Draw the bar
 function Bar:draw(x, y, width, height)
 	-- Draw the background rectangle
-	lg.setColor(self.bgColor[1], self.bgColor[2], self.bgColor[3], self.bgColor[4])
-	lg.rectangle('fill', x, y, width, height)
+	lg.setColor(self.bgColor)
+	lg.rectangle('fill', x, y - UI_edge_width/2, width, height + UI_edge_width)
 
 	-- Draw the filled part
-	lg.setColor(self.fgColor[1], self.fgColor[2], self.fgColor[3], self.fgColor[4])
-	lg.rectangle('fill', x, y, width * (tonumber(self.value)/tonumber(self.full)), height)
-	lg.rectangle('line', x, y, width, height)
+	lg.setColor(self.fgColor)
+	lg.rectangle('fill', x + UI_edge_width/2, y, (width - UI_edge_width) * (tonumber(self.value)/tonumber(self.full)), height)
 end
 
 return Bar

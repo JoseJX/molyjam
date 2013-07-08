@@ -146,7 +146,7 @@ end
 function quit_intro()
 	state.keypressed = game_keypressed
 	state.mousepressed = game_mousepressed
-	state.mousereleased = game_mousepressed
+	state.mousereleased = game_mousereleased
 	state.update = game_update
 	state.draw = game_draw
 end
@@ -163,11 +163,9 @@ function game_keypressed(key, unicode)
 end
 -- Mouse press callbacks
 function game_mousepressed(x, y, button)
-	-- Check the phone state
 	p2:mousepressed(x, y, true)
 end
 function game_mousereleased(x, y, button)
-	-- Release
 	p2:mousepressed(x, y, false)
 end
 
@@ -241,7 +239,7 @@ function game_draw()
 	g:draw(p["x"], p["y"])
 	-- Plane
 	p:draw(height, level)
-	
+
 	---------------------------
 	-- Draw the Player 2 screen
 	---------------------------

@@ -93,9 +93,8 @@ function Caller:new(window, caller_rate)
 
 	-- Configure the user's patience bar
 	obj.caller_bar = Bar:new()
-	obj.caller_bar.color = { 200, 40, 0, 255 }
-	obj.caller_bar.bg_color = { 40, 255, 0, 255 }
-
+	obj.caller_bar.fgColor = { 0, 128, 256, 255 }
+	obj.caller_bar.bgColor =  {255, 128, 0, 255 }
 	obj = setmetatable(obj, Caller)
 	return obj
 end
@@ -164,9 +163,10 @@ function Caller:draw(call_state, text)
 
 	-- Draw the patience bar
 	if call_state == "OnHold" or call_state == "Talking" or call_state == "Missed" or call_state == "Insulted" then
+		lg.setColor(255,255,255,255)
 		self.caller_bar:draw(box_x, box_y + caller_box_height - 10, caller_box_width, 20)
 		lg.setColor(0,0,0,255)
-		lg.printf(self.caller_bar.value .. "/" .. self.caller_bar.full .. " Patience", box_x, box_y + caller_box_height - 10, caller_box_width, 'center')
+		lg.printf(self.caller_bar.value .. "/" .. self.caller_bar.full .. " Patience", box_x, box_y + caller_box_height - 5, caller_box_width, 'center')
 	end
 
 	-------------------------

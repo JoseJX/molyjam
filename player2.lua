@@ -36,8 +36,7 @@ function Player:new(window)
 		-- Player's patience
 		patience = 100,
 		-- Player's brain points
-		bp = 0,
-		max_bp = 0,
+		bp = 50,
 		-- Player's inventory
 		inventory = {},
 
@@ -48,12 +47,9 @@ function Player:new(window)
 		insult_buttons = {}
 	}
 	-- Create some random stats
-	obj.int = math.random(5,10)
-	obj.dex = math.random(5,10)
-	obj.im = math.random(5,10)
-
-	-- Calculate the max BP
-	obj.max_bp = obj.int * int_multiplier + obj.dex + obj.im
+	obj.int = math.random(3,7)
+	obj.dex = math.random(3,7)
+	obj.im = math.random(3,7)
 
 	-- Instance the store
 	obj.store = Store:new(window)
@@ -75,9 +71,6 @@ function Player:update(dt, call_state)
 	if call_state == "Talking" then
 		-- Increment the player's brain points
 		self.bp = self.bp + (dt * self.im)
-		if self.bp > self.max_bp then
-			self.bp = self.max_bp
-		end
 
 		for i = 1,3 do
 			if not (self.inventory[i] == nil) then
@@ -93,27 +86,26 @@ function Player:update(dt, call_state)
 			self.insult_buttons[i].enabled = false
 		end
 		self.bp = self.bp - (dt * self.im)/2
-	elseif call_state == "Missed" or call_state == "Insulted" then
+	elseif call_state == "Missed" or call_state == "Insulted" or call_state == "Using" then
 		for i = 1,3 do
 			self.insult_buttons[i].enabled = false
 		end
-	elseif call_state == "Hiding" then
-		self.bp = 0
 	end
+
+	-- Update the store state
+	self.store:update(dt, self.level, self.bp)
 end
 
 -- Check if an insult can be cast
-function Player:check_insult(id)
+function Player:check_insult(id, call_state)
 	if self.inventory[id] == nil then
-		return true
-	end
-
-	local level = self.inventory[id].current_level
-
-	if tonumber(self.inventory[id].upgrades[level].cost) > tonumber(self.bp) then
 		return false
 	end
-	return true
+
+	if call_state == "Talking" and self.insult_buttons[id].fill_amt == 1 then
+		return true
+	end
+	return false
 end
 
 -- Attack! - Returns damage amount
@@ -128,8 +120,13 @@ function Player:attack(id)
 	else
 		critical = 1
 	end
+	
+	-- If the user has 2x the level of the insult, it always passes
 	local rate = math.random()
-	if rate < self.int/10 * insult.rate then
+	if self.level > 2*tonumber(insult.level) then
+		rate = 0
+	end
+	if rate < tonumber(insult.rate) then
 		rate = 1
 	else
 		rate = 0
@@ -145,14 +142,15 @@ end
 
 -- Add experience
 function Player:addXP(patience)
-	self.xp = self.xp + (patience/2) * 1/self.level	
-	print(self.xp)
+	self.xp = self.xp + math.ceil((patience/2) * 1/self.level)
 	if self.xp >= self.next_level then
 		self.level = self.level + 1
 		self.xp = self.xp - self.next_level
 
-		-- Calculate the max BP
-		self.max_bp = self.int * int_multiplier + self.dex + self.im
+		-- Increment the player's stats
+		self.int = self.int + math.random(1,self.level)
+		self.dex = self.dex + math.random(1,self.level)
+		self.im = self.im + math.random(1,self.level)
 
 		return true
 	end
@@ -163,7 +161,7 @@ end
 function Player:check(x, y, button, call_state)
 	-- Store state
 	if call_state == "Hiding" then
-		self.store:check(x, y, button)
+		self.bp = self.bp - self.store:check(x, y, button)
 		-- Get the checked insults from the store
 		self.inventory = {}
 		local button_id = 1
@@ -191,7 +189,7 @@ function Player:check(x, y, button, call_state)
 			-- Insult cast?
 			if self.insult_buttons[id]:check(x, y, button) == true then
 				-- Check if the insult is castable with the current state	
-				if self:check_insult(id) == true then
+				if self:check_insult(id, call_state) == true then
 					self.insult_buttons[id].fill_amt = 0
 					return id
 				end

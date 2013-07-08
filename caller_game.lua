@@ -152,7 +152,6 @@ function CallerGame:update(dt)
 			self.call_state = "Hiding"
 		end
 	end
-	
 
 	-- Update the player state
 	self.player:update(dt, self.call_state)
@@ -189,8 +188,8 @@ function CallerGame:mousepressed(x, y, button)
 
 	-- Check the answer and reject buttons
 	if self.call_state == "Using" and self.answer_button:check(x, y, button) then
-		-- We're in game mode, trigger on the release
 		if button == false then
+			-- We're in game mode, trigger on the release
 			self.answer_button.visible = false
 			self.refuse_button.visible = false
 			-- Set the mode to talking
@@ -198,11 +197,11 @@ function CallerGame:mousepressed(x, y, button)
 			-- Update the text
 			self.text:updateText("player", "intro")
 			self.text:updateText("caller", "intro")
-		end
+		end	
 	-- Lame, the player rejected the call
 	elseif self.refuse_button:check(x, y, button) then
-		self.caller.caller_id = 0
 		if button == false then
+			self.caller.caller_id = 0
 			self.answer_button.visible = false
 			self.refuse_button.visible = false
 		end
