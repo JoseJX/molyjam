@@ -102,7 +102,13 @@ end
 
 -- Update the state of the caller
 function Caller:update(dt)
-	-- FIXME
+	-- FIXME: Cast attacks back at the player...
+	
+	-- Return the state of the caller
+	if tonumber(self.caller_bar.value) <= 0 then
+		return true
+	end	
+	return false
 end
 
 -- The caller got attacked

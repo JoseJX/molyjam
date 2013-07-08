@@ -48,9 +48,9 @@ function Player:new(window)
 		insult_buttons = {}
 	}
 	-- Create some random stats
-	obj.int = math.random(1,10)
-	obj.dex = math.random(1,10)
-	obj.im = math.random(1,10)
+	obj.int = math.random(5,10)
+	obj.dex = math.random(5,10)
+	obj.im = math.random(5,10)
 
 	-- Calculate the max BP
 	obj.max_bp = obj.int * int_multiplier + obj.dex + obj.im
@@ -80,8 +80,8 @@ function Player:update(dt, call_state)
 		end
 
 		for i = 1,3 do
-			self.insult_buttons[i].enabled = true
 			if not (self.inventory[i] == nil) then
+				self.insult_buttons[i].enabled = true
 				self.insult_buttons[i].fill_amt = self.insult_buttons[i].fill_amt + (dt * self.im) / (self.inventory[i].upgrades[self.inventory[i].current_level].cost)
 				if self.insult_buttons[i].fill_amt > 1 then
 					self.insult_buttons[i].fill_amt = 1
@@ -104,6 +104,10 @@ end
 
 -- Check if an insult can be cast
 function Player:check_insult(id)
+	if self.inventory[id] == nil then
+		return true
+	end
+
 	local level = self.inventory[id].current_level
 
 	if tonumber(self.inventory[id].upgrades[level].cost) > tonumber(self.bp) then
@@ -141,7 +145,8 @@ end
 
 -- Add experience
 function Player:addXP(patience)
-	self.xp = self.xp + patience * 1/self.level	
+	self.xp = self.xp + (patience/2) * 1/self.level	
+	print(self.xp)
 	if self.xp >= self.next_level then
 		self.level = self.level + 1
 		self.xp = self.xp - self.next_level
@@ -156,10 +161,6 @@ end
 
 -- Check buttons
 function Player:check(x, y, button, call_state)
-	if button == true then
-		return 0
-	end
-
 	-- Store state
 	if call_state == "Hiding" then
 		self.store:check(x, y, button)
@@ -177,10 +178,15 @@ function Player:check(x, y, button, call_state)
 			for i = button_id, self.store.max_checked do 
 				self.insult_buttons[i].text = "No insult selected..."	
 				self.inventory[i] = nil
+				self.insult_buttons[i].enabled = false
 			end
 		end
 	-- Battle state
 	else
+		if button == true then
+			return 0
+		end
+
 		for id, insult in ipairs(self.insult_buttons) do
 			-- Insult cast?
 			if self.insult_buttons[id]:check(x, y, button) == true then

@@ -106,10 +106,16 @@ function CallerGame:update(dt)
 
 	-- Update the caller state
 	if self.caller.caller_id > 0 then
-		self.caller:update(dt)
+		-- If the caller is done, then we won!
+		if self.caller:update(dt) == true then
+			self.player:addXP(self.caller.caller_bar.full)
+			self.caller:disconnect()
+			self.call_state = "Using"
+		end
 	else
 		-- We've got a new caller, update the caller information
-		if(math.random() <= self.caller_rate) then
+		local new_caller = math.random()
+		if(new_caller <= self.caller_rate) then
 			-- Create the caller
 			self.caller:create()
 			-- Send the text to the text generator

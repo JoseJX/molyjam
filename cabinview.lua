@@ -52,6 +52,15 @@ end
 
 -- Update the cabin view
 function CabinView:update(dt, call_state)
+	-- Update the hide/talk button state
+	if call_state == "Missed" or call_state == "Insulted" or call_state == "Failed" or call_state == "Won" then
+		self.button_hide.enabled = false
+		self.button_talk.enabled = false
+	elseif call_state == "Talking" or call_state == "OnHold" then
+		self.button_hide.enabled = true
+		self.button_talk.enabled = true
+	end
+
 	-- Check if the stewardess has caught the user
 	if self.s:update(dt, call_state) == true then
 		self.button_hide.enabled = false
