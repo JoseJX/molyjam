@@ -15,8 +15,11 @@ function Button:new(text, x_pos, y_pos, width, height, align)
 		visible = true,
 		color = { 0, 0, 0, 255 },
 		bg_color = { 255,255,255,255 },
+		fill_color = { 0, 0, 255, 128 },
 		enabled = true,
 		align = align,
+		fill_type = 'full',
+		fill_amt = 0,
 	}
 
 	-- Load all of the caller images
@@ -72,14 +75,34 @@ function Button:draw()
 		lg.rectangle('fill', self.x + 5, self.y + 5, self.width - 10, self.height - 10)
 		-- Draw the text
 		lg.setColor(self.bg_color)
-		lg.printf(self.text, self.x, self.y + 10, self.width, self.align)
+		if self.align == 'center' then
+			lg.printf(self.text, self.x, self.y + 10, self.width, self.align)
+		else
+			lg.printf(self.text, self.x + 10, self.y + 10, self.width, self.align)
+		end
+		
+		if self.fill_type == 'partial' then
+			lg.setColor(self.fill_color)
+			local fill_amt = self.fill_amt * (self.width - 10)
+			lg.rectangle('fill', self.x + 5, self.y + 5, fill_amt, self.height - 10)
+		end
 	else
 		-- Draw the inside
 		lg.setColor(self.bg_color)
 		lg.rectangle('fill', self.x + 5, self.y + 5, self.width - 10, self.height - 10)
 		-- Draw the text
 		lg.setColor(self.color)
-		lg.printf(self.text, self.x, self.y + 10, self.width, self.align)
+		if self.align == 'center' then
+			lg.printf(self.text, self.x, self.y + 10, self.width, self.align)
+		else
+			lg.printf(self.text, self.x + 10, self.y + 10, self.width, self.align)
+		end
+		
+		if self.fill_type == 'partial' then
+			lg.setColor(self.fill_color)
+			local fill_amt = self.fill_amt * (self.width - 10)
+			lg.rectangle('fill', self.x + 5, self.y + 5, fill_amt, self.height - 10)
+		end
 	end
 end
 

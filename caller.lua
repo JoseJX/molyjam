@@ -32,6 +32,9 @@ function Caller:new(window, caller_rate)
 		caller_answered = false,
 		-- Caller patience bar
 		caller_bar = nil,
+		-- Caller has lost counter
+		caller_done = false,	
+		caller_lost_ct = 0,
 	}
 
 	-- Load all of the caller data
@@ -58,6 +61,8 @@ function Caller:new(window, caller_rate)
 					c.lost = string.sub(line, 6)
 				elseif string.sub(line, 1, 8) == "waiting:" then
 					c.waiting = string.sub(line, 9)
+				elseif string.sub(line, 1, 7) == "missed:" then
+					c.missed = string.sub(line, 8)
 				elseif string.sub(line, 1, 5) == "hold:" then
 					c.hold = string.sub(line, 6)
 				-- All other lines, based on the level of response
@@ -100,6 +105,15 @@ function Caller:update(dt)
 	-- FIXME
 end
 
+-- The caller got attacked
+function Caller:gotAttacked(patience)
+	self.caller_bar:updateValue(-patience)
+	if self.caller_bar.value <= 0 then
+		self.caller_bar.value = 0
+		self.caller_done = true	
+	end
+end
+
 -- "Disconnect" caller, and get ready for a new caller
 function Caller:disconnect(lost_phones)
 	self.caller_id = 0
@@ -118,10 +132,6 @@ end
 -- Get the current caller's talk information
 function Caller:getText()
 	return self.callers[self.caller_id]
-end
-
--- Check the caller buttons
-function Caller:check(x, y, button) 
 end
 
 -- Draw the caller image
@@ -147,7 +157,7 @@ function Caller:draw(call_state, text)
 	end
 
 	-- Draw the patience bar
-	if call_state == "OnHold" or call_state == "Talking" then
+	if call_state == "OnHold" or call_state == "Talking" or call_state == "Missed" or call_state == "Insulted" then
 		self.caller_bar:draw(box_x, box_y + caller_box_height - 10, caller_box_width, 20)
 		lg.setColor(0,0,0,255)
 		lg.printf(self.caller_bar.value .. "/" .. self.caller_bar.full .. " Patience", box_x, box_y + caller_box_height - 10, caller_box_width, 'center')
@@ -190,7 +200,7 @@ function Caller:draw(call_state, text)
 	-- Draw the speech bubble for the player
 	-- Done here because it's easier...
 	----------------------------------------
-	if call_state == "Talking" then
+	if call_state == "Talking" or call_state == "Insulted" or call_state == "Missed" then
 		local speech_x = self.win_x + caller_box_border/2
 		local speech_y = self.win_y + self.win_h - speech_h
 		local speech_w = self.win_w - caller_box_border

@@ -97,7 +97,11 @@ function Store:new(window)
 			-- Add in the buttons for this insult
 			local x_val = obj.window[1] + UI_CB_width + UI_TX_width
 			local y_val = obj.window[2] + (UI_line_height + UI_line_separator) * (current_insult - 1)
-			obj.insults[current_insult].checkbox = Button:new("", obj.window[1], y_val, UI_CB_width, UI_line_height,'center')
+			if obj.insults[current_insult].min_level == 1 then
+				obj.insults[current_insult].checkbox = Button:new("X", obj.window[1], y_val, UI_CB_width, UI_line_height,'center')
+			else
+				obj.insults[current_insult].checkbox = Button:new("", obj.window[1], y_val, UI_CB_width, UI_line_height,'center')
+			end
 			obj.insults[current_insult].upgrade = Button:new("Upgrade", x_val, y_val, UI_UP_width, UI_line_height,'center')
 		end
 	end

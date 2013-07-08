@@ -63,19 +63,22 @@ function Text:update(dt, phone_state)
 		end
 	elseif phone_state == "OnHold" then
 		self:updateText("caller", "hold")
+	elseif phone_state == "Insulted" then
+		self:updateText("caller", "insulted")
+		self:updateText("player", "insulted")
+	elseif phone_state == "Missed" then
+		self:updateText("caller", "missed")
+		self:updateText("player", "missed")
+	elseif phone_state == "Failed" then
+		self:updateText("caller", "win")
+	elseif phone_state == "Won" then
+		self:updateText("caller", "lost")
 	end
 end
 
 -- Change the current caller's fixed responses
 function Text:switchCaller(data)
 	self.caller = data
-end
-
--- Text drawing function
-function Text:draw()
-	-- Draw the inventory screen
-	
-	-- Draw the battle screen
 end
 
 -- Update the caller text
@@ -85,6 +88,8 @@ function Text:updateText(who, state)
 			-- Find out how many words to render
 			local words = math.random(5,7)
 			self.caller_text = self:getConversation(words, true)
+		elseif state == "insulted" then
+			self.caller_text = "FIXME RESPONSE HERE"
 		else
 			self.caller_text = self.caller[state]
 		end
@@ -93,8 +98,12 @@ function Text:updateText(who, state)
 			-- Find out how many words to render
 			local words = math.random(5,7)
 			self.player_text = self:getConversation(words, false)
-		else
+		elseif state == "intro" then
 			self.player_text = "Thank you for calling the Technoob line, how can I help you?"
+		elseif state == "insulted" then
+			self.player_text = "FIXME INSULT HERE"
+		elseif state == "missed" then
+			self.player_text = "Sorry about that. (It flew over their head)"
 		end
 	end
 end

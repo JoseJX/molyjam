@@ -10,6 +10,9 @@ Player.__index = Player
 local UI_line_separator = 10
 local UI_button_width = 300
 local UI_button_height = 30
+local UI_caller_offset = 30 + 2*UI_line_separator
+local UI_line_height = 30
+local int_multiplier = 5
 
 -- New player object
 function Player:new(window)
@@ -34,6 +37,7 @@ function Player:new(window)
 		patience = 100,
 		-- Player's brain points
 		bp = 0,
+		max_bp = 0,
 		-- Player's inventory
 		inventory = {},
 
@@ -48,31 +52,53 @@ function Player:new(window)
 	obj.dex = math.random(1,10)
 	obj.im = math.random(1,10)
 
+	-- Calculate the max BP
+	obj.max_bp = obj.int * int_multiplier + obj.dex + obj.im
+
 	-- Instance the store
 	obj.store = Store:new(window)
 
 	-- Instance the insult buttons
 	for i = 1,3 do 
 		local i_x = obj.window[1] + UI_line_separator/2
-		local i_y = obj.window[2] + UI_caller_offset + (UI_line_height + UI_line_separator) * (i - 1)
-
-		obj.insult_buttons[i] = Button:new("", i_x, i_y, UI_button_width, UI_button_height)
+		local i_y = obj.window[2] + (UI_line_height + UI_line_separator) * (i - 1)
+		obj.insult_buttons[i] = Button:new("No insult selected...", i_x, i_y, UI_button_width, UI_button_height, 'left')
+		obj.insult_buttons[i].fill_type = 'partial'
+		obj.insult_buttons[i].fill_amt = 0
 	end
 	
 	return setmetatable(obj, Player)
 end
 
 -- Update the player's stats
-function Player:update(dt)
-	-- Increment the player's brain points
-	self.bp = self.bp + (dt * self.im)
+function Player:update(dt, call_state)
+	if call_state == "Talking" then
+		-- Increment the player's brain points
+		self.bp = self.bp + (dt * self.im)
+		if self.bp > self.max_bp then
+			self.bp = self.max_bp
+		end
+
+		for i = 1,3 do
+			if not (self.inventory[i] == nil) then
+				self.insult_buttons[i].fill_amt = self.insult_buttons[i].fill_amt + (dt * self.im) / (self.inventory[i].upgrades[self.inventory[i].current_level].cost)
+				if self.insult_buttons[i].fill_amt > 1 then
+					self.insult_buttons[i].fill_amt = 1
+				end
+			end
+		end
+	elseif call_state == "OnHold" then
+		self.bp = self.bp - (dt * self.im)/2
+	elseif call_state == "Hiding" then
+		self.bp = 0
+	end
 end
 
 -- Check if an insult can be cast
 function Player:check_insult(id)
 	local level = self.inventory[id].current_level
 
-	if self.inventory[id].upgrades[level].cost > self.bp then
+	if tonumber(self.inventory[id].upgrades[level].cost) > tonumber(self.bp) then
 		return false
 	end
 	return true
@@ -83,7 +109,7 @@ function Player:attack(id)
 	local insult = self.inventory[id].upgrades[self.inventory[id].current_level]
 	
 	local combo = math.random(1, insult.combo)		
-	local damage = self.inventory[id].upgrades[level].damage
+	local damage = insult.damage
 	local critical = math.random()
 	if critical < self.dex/100 then
 		critical = insult.critical
@@ -91,13 +117,17 @@ function Player:attack(id)
 		critical = 1
 	end
 	local rate = math.random()
-	if rate < self.int/10 * self.rate then
+	if rate < self.int/10 * insult.rate then
 		rate = 1
 	else
 		rate = 0
 	end
 
 	local total = rate * (combo * (damage * critical))
+
+	-- Take away the casting cost
+	self.bp = self.bp - insult.cost
+
 	return total	
 end
 
@@ -107,6 +137,10 @@ function Player:addXP(patience)
 	if self.xp >= self.next_level then
 		self.level = self.level + 1
 		self.xp = self.xp - self.next_level
+
+		-- Calculate the max BP
+		self.max_bp = self.int * int_multiplier + self.dex + self.im
+
 		return true
 	end
 	return false
@@ -119,10 +153,18 @@ function Player:check(x, y, button, call_state)
 		self.store:check(x, y, button)
 		-- Get the checked insults from the store
 		self.inventory = {}
+		local button_id = 1
 		for id, insult in ipairs(self.store.insults) do
 			if insult.checkbox.text == "X" then
 				table.insert(self.inventory, insult)
-				self.insult_buttons[id].text = insult.upgrades[insult.current_level].name
+				self.insult_buttons[button_id].text = insult.upgrades[insult.current_level].name
+				button_id = button_id + 1
+			end
+		end
+		if button_id <= self.store.max_checked then
+			for i = button_id, self.store.max_checked do 
+				self.insult_buttons[i].text = "No insult selected..."	
+				self.inventory[i] = nil
 			end
 		end
 	-- Battle state
@@ -131,10 +173,15 @@ function Player:check(x, y, button, call_state)
 			-- Insult cast?
 			if self.insult_buttons[id]:check(x, y, button) == true then
 				-- Check if the insult is castable with the current state	
-				
+				if self:check_insult(id) == true then
+					print ("Resetting")
+					self.insult_buttons[id].fill_amt = 0
+					return id
+				end
 			end
 		end
 	end
+	return 0
 end
 
 -- Player drawing function

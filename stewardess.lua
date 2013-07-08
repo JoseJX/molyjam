@@ -16,7 +16,7 @@ function Stewardess:new(wpl, wpr)
 		images = {},
 		state = stewardess_state[1],
 		speed = 1,
-		instance_rate = 0.005,
+		instance_rate = 0, --.005,
 		direction = "right",
 		x = 1,
 		walk_path_left = wpl,
@@ -62,9 +62,9 @@ function Stewardess:update(dt, phone_state)
 		end
 	end
 	
-	
 	-- Check if the player is using the phone when the stewardess is there?
-	if (phone_state == "Talking" or phone_state == "Using") and self.state == "Walking" then
+	local using = (phone_state == "Talking" or phone_state == "Using" or phone_state == "Missed" or phone_state == "Insulted" or phone_state == "Failed" or phone_state == "Won") 
+	if using == true and self.state == "Walking" then
 		local left_side = ((self.walk_path_right - self.walk_path_left) / 3) - self.width 
 		local right_side = (2*(self.walk_path_right - self.walk_path_left) / 3)
 		if self.x > left_side and self.x < right_side and self.direction == "right" then

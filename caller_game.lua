@@ -26,6 +26,10 @@ local enum_call_states = {
 	"Using",
 	"Talking",
 	"OnHold",
+	"Insulted",
+	"Missed",
+	"Failed",
+	"Won",
 	"Caught"
 }
 
@@ -52,6 +56,8 @@ function CallerGame:new(window)
 		cabin_window = nil,
 		-- State of the call
 		call_state = "Hiding",
+		get_out_of_mh_state_dt = 0,
+		mh_state_timer = 2,
 
 		-------------------------------------------
 		-- Game configuration options
@@ -89,6 +95,15 @@ end
 
 -- Update the state of the game
 function CallerGame:update(dt)
+	-- Update the caller state when missed or insulted
+	if self.call_state == "Insulted" or self.call_state == "Missed" then
+		self.get_out_of_mh_state_dt = self.get_out_of_mh_state_dt + dt
+		if self.get_out_of_mh_state_dt > self.mh_state_timer then
+			self.call_state = "Talking"	
+			self.get_out_of_mh_state_dt = 0
+		end
+	end
+
 	-- Update the caller state
 	if self.caller.caller_id > 0 then
 		self.caller:update(dt)
@@ -112,8 +127,6 @@ function CallerGame:update(dt)
 			self.refuse_button.enabled = true
 		end
 	end
-	-- Update the player state
-	self.player:update(dt)
 
 	-- Update the cabin state
 	if self.cabin:update(dt, self.call_state) then
@@ -133,6 +146,10 @@ function CallerGame:update(dt)
 			self.call_state = "Hiding"
 		end
 	end
+	
+
+	-- Update the player state
+	self.player:update(dt, self.call_state)
 
 	-- Update the text
 	self.text:update(dt, self.call_state)
@@ -140,8 +157,20 @@ end
 
 -- Check the buttons for user input
 function CallerGame:mousepressed(x, y, button) 
-	-- Update the player dialogs
-	self.player:check(x, y, button, self.call_state)
+	-- Check the player buttons
+	local attack = self.player:check(x, y, button, self.call_state)
+
+	-- An insult was cast!
+	if attack > 0 then
+		local av = self.player:attack(attack)
+		-- The insult failed :(
+		if av <= 0 then
+			self.call_state = "Missed"	
+		else
+			self.caller:gotAttacked(av)
+			self.call_state = "Insulted"	
+		end
+	end
 
 	-- Check the cabin view for use/hide phone
 	local new_state = self.cabin:mousepressed(x, y, button, self.call_state)
