@@ -2,9 +2,14 @@
 local lg = love.graphics
 local Store = require 'store'
 local Bar = require 'bar'
+local Button = require 'button'
 
 local Player = {}
 Player.__index = Player
+
+local UI_line_separator = 10
+local UI_button_width = 300
+local UI_button_height = 30
 
 -- New player object
 function Player:new(window)
@@ -24,7 +29,9 @@ function Player:new(window)
 		-- Player's experience
 		xp = 0,
 		level = 1,
-		next_level = 1000,
+		next_level = 100,
+		-- Player's patience
+		patience = 100,
 		-- Player's brain points
 		bp = 0,
 		-- Player's inventory
@@ -33,8 +40,8 @@ function Player:new(window)
 		-- Insult Store
 		store = {},
 
-		-- Buttons for the player UI
-		level_bar = nil,
+		-- Insult buttons for the battle UI
+		insult_buttons = {}
 	}
 	-- Create some random stats
 	obj.int = math.random(1,10)
@@ -43,12 +50,66 @@ function Player:new(window)
 
 	-- Instance the store
 	obj.store = Store:new(window)
+
+	-- Instance the insult buttons
+	for i = 1,3 do 
+		local i_x = obj.window[1] + UI_line_separator/2
+		local i_y = obj.window[2] + UI_caller_offset + (UI_line_height + UI_line_separator) * (i - 1)
+
+		obj.insult_buttons[i] = Button:new("", i_x, i_y, UI_button_width, UI_button_height)
+	end
+	
 	return setmetatable(obj, Player)
 end
 
 -- Update the player's stats
 function Player:update(dt)
+	-- Increment the player's brain points
+	self.bp = self.bp + (dt * self.im)
+end
 
+-- Check if an insult can be cast
+function Player:check_insult(id)
+	local level = self.inventory[id].current_level
+
+	if self.inventory[id].upgrades[level].cost > self.bp then
+		return false
+	end
+	return true
+end
+
+-- Attack! - Returns damage amount
+function Player:attack(id) 
+	local insult = self.inventory[id].upgrades[self.inventory[id].current_level]
+	
+	local combo = math.random(1, insult.combo)		
+	local damage = self.inventory[id].upgrades[level].damage
+	local critical = math.random()
+	if critical < self.dex/100 then
+		critical = insult.critical
+	else
+		critical = 1
+	end
+	local rate = math.random()
+	if rate < self.int/10 * self.rate then
+		rate = 1
+	else
+		rate = 0
+	end
+
+	local total = rate * (combo * (damage * critical))
+	return total	
+end
+
+-- Add experience
+function Player:addXP(patience)
+	self.xp = self.xp + patience * 1/self.level	
+	if self.xp >= self.next_level then
+		self.level = self.level + 1
+		self.xp = self.xp - self.next_level
+		return true
+	end
+	return false
 end
 
 -- Check buttons
@@ -61,11 +122,18 @@ function Player:check(x, y, button, call_state)
 		for id, insult in ipairs(self.store.insults) do
 			if insult.checkbox.text == "X" then
 				table.insert(self.inventory, insult)
+				self.insult_buttons[id].text = insult.upgrades[insult.current_level].name
 			end
 		end
 	-- Battle state
 	else
-
+		for id, insult in ipairs(self.insult_buttons) do
+			-- Insult cast?
+			if self.insult_buttons[id]:check(x, y, button) == true then
+				-- Check if the insult is castable with the current state	
+				
+			end
+		end
 	end
 end
 
@@ -78,18 +146,13 @@ function Player:draw(call_state)
 	-------------------------------------------------------------
 	if call_state == "Hiding" then
 		self.store:draw(self.level)
-	
 	---------------------
 	-- Battle Menu
 	---------------------
 	else
-		-- Get the checked insults from the store
-		
-
-
---		for button_id, button in ipairs(self.insult_buttons) do
---			button:draw()
---		end
+		for button_id, button in ipairs(self.insult_buttons) do
+			button:draw()
+		end
 --
 --		-- Display the current brain points and bar
 --		self.brain_bar:draw()

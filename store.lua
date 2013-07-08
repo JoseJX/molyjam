@@ -122,9 +122,6 @@ function Store:check(x, y, button)
 		-- Upgrade button
 		if insult.upgrade:check(x, y - self.scroll, button) then
 			if button == false then	
-				if insult.current_level < insult.max_level then
-					insult.current_level = insult.current_level + 1
-				end
 			end
 		end
 	end
