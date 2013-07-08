@@ -16,7 +16,7 @@ function Stewardess:new(wpl, wpr)
 		images = {},
 		state = stewardess_state[1],
 		speed = 1,
-		instance_rate = 0, --.005,
+		instance_rate = 0.002,
 		direction = "right",
 		x = 1,
 		walk_path_left = wpl,
