@@ -13,8 +13,7 @@ local level_length = 100000
 local level_height = 2000
 local caller_rate = 0.005
 
--- Graphics positioning constants
--- FIXME
+-- Graphics positioning constants (FIXME?)
 local UI_bar_height = 20
 local UI_divider_width = 10
 local UI_score_oft_H = 20
@@ -27,8 +26,23 @@ local UI_player_window_width = (window_width / 2) - (UI_divider_width/2)
 local UI_player_window_height = window_height - UI_bar_height
 local UI_right_panel_x = UI_player_window_width + UI_divider_width
 
-local draw_ct = 0
+-- State switcher 
+state = {
+	keypressed = nil,
+	mousepressed = nil,
+	mousereleased = nil,
+	update = nil,
+	draw = nil,
+}
 
+-- Introduction variables
+local intro_top_alpha = 255
+local intro_bottom_alpha = 255
+local fade_speed = 25
+
+-------------------------------------------------------------------------------
+-- Common logic
+-------------------------------------------------------------------------------
 -- Load the game data on program start
 function love.load()
 	-----------------
@@ -52,29 +66,113 @@ function love.load()
 	-- Create the game instance for player 2
 	local p2_window = { UI_right_panel_x, UI_bar_height, UI_player_window_width, UI_player_window_height }
 	p2 = CallerGame:new(p2_window)
+
+	-----------------
+	-- Introduction
+	-----------------
+	intro_img = lg.newImage('graphics/intro1.png')
+	state.keypressed = intro_keypressed
+	state.mousepressed = intro_keypressed
+	state.mousereleased = intro_mousereleased
+	state.update = intro_update
+	state.draw = intro_draw
 end
 
-
--- Keypress callbacks that aren't handled in the main update loop
+-- Function dispatcher
 function love.keypressed(key, unicode)
+	if not (state.keypressed == nil) then
+		state.keypressed(key, unicode)
+	end
+end
+function love.mousepressed(x, y, button)
+	if not (state.mousepressed == nil) then
+		state.mousepressed(x, y, button)
+	end
+end
+function love.mousereleased(x, y, button)
+	if not (state.mousereleased == nil) then
+		state.mousereleased(x, y, button)
+	end
+end
+function love.update(dt)
+	if not (state.update == nil) then
+		state.update(dt)
+	end
+end
+function love.draw()
+	if not (state.draw == nil) then
+		state.draw()
+	end
+end
+
+-------------------------------------------------------------------------------
+-- Intro logic
+-------------------------------------------------------------------------------
+function intro_keypressed(key, unicode)
+	if key == "escape" then
+		love.event.push('quit')
+	else
+		quit_intro()
+	end
+end
+function intro_mousepressed(x, y, button)
+	-- Wait for release
+end
+function intro_mousepressed(x, y, button)
+	quit_intro()
+end
+function intro_update(dt)
+	if intro_top_alpha > 0 then
+		intro_top_alpha = intro_top_alpha - fade_speed*dt
+		if intro_top_alpha < 0 then
+			intro_top_alpha = 0
+		end
+	elseif intro_bottom_alpha > 0 then
+		intro_bottom_alpha = intro_bottom_alpha - fade_speed*dt		
+		if intro_bottom_alpha < 0 then
+			intro_bottom_alpha = 0
+		end
+	end
+end
+function intro_draw()
+	lg.setColor(255,255,255,255)
+	lg.draw(intro_img, 0, 0)
+	lg.setColor(0,0,0,intro_top_alpha)
+	lg.rectangle('fill', 0, 0, window_width, window_height/2)
+	lg.setColor(0,0,0,intro_bottom_alpha)
+	lg.rectangle('fill', 0, window_height/2, window_width, window_height/2)
+end
+-- Reset the functions to be dispatched
+function quit_intro()
+	state.keypressed = game_keypressed
+	state.mousepressed = game_mousepressed
+	state.mousereleased = game_mousepressed
+	state.update = game_update
+	state.draw = game_draw
+end
+
+-------------------------------------------------------------------------------
+-- Game logic
+-------------------------------------------------------------------------------
+-- Keypress callbacks that aren't handled in the main update loop
+function game_keypressed(key, unicode)
 	-- Quit the game
 	if key == "escape" then
 		love.event.push('quit')
 	end
 end
-
 -- Mouse press callbacks
-function love.mousepressed(x, y, button)
+function game_mousepressed(x, y, button)
 	-- Check the phone state
 	p2:mousepressed(x, y, true)
 end
-function love.mousereleased(x, y, button)
+function game_mousereleased(x, y, button)
 	-- Release
 	p2:mousepressed(x, y, false)
 end
 
 -- Main update loop
-function love.update(dt)
+function game_update(dt)
 	-- Pitch the plane up
 	if lk.isDown("right") or lk.isDown("d") then
 		p["angle"] = p["angle"] + 1
@@ -134,7 +232,7 @@ function love.update(dt)
 end
 
 -- Drawing function, all drawing must be done from here!
-function love.draw()
+function game_draw()
 	---------------------------
 	-- Draw the Player 1 screen
 	---------------------------
@@ -171,12 +269,5 @@ function love.draw()
 	-- lg.print(math.floor(p["x"]), window_width*.2, UI_score_oft_V)
 	-- lg.print(math.floor(p["y"]), window_width*.3, UI_score_oft_V)
 	-- lg.print(p["entropy"], window_width*.4, UI_score_oft_V)
-
-	-- if draw_ct > 5 then
-	--	lg.setColor(0,0,255,255)
-	--	lg.circle('fill', UI_player_window_width/2, UI_player_window_height / 2 + UI_bar_height, 3)
-	--	draw_ct = 0
-	--end
-	--draw_ct = draw_ct + 1
 end
 
